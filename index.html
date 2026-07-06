@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+  <script>
+    if (window.self !== window.top) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'poli-theme') {
+          document.documentElement.setAttribute('data-theme', e.data.light ? 'light' : 'dark');
+        }
+      });
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculate whether booth rent or commission works out better for your tattoo studio revenue. Compare net income under both models with your real numbers.">
+  <title>Booth Rent vs Commission Calculator | Poli International</title>
+  <link rel="stylesheet" href="/tools/booth-rent-calculator/css/style.css">
+</head>
+<body>
+<div class="tool-wrapper">
+
+  <header class="tool-header">
+    <div class="tool-header__badge">💼 Studio Economics</div>
+    <h1>Booth Rent vs Commission Calculator</h1>
+    <p>Enter your studio's revenue and cost figures to see which model leaves more money in your pocket — and at what revenue level they break even.</p>
+  </header>
+
+  <div class="calc-grid">
+    <!-- Shared inputs -->
+    <div class="input-card">
+      <h2 class="card-title">Your Numbers</h2>
+
+      <div class="input-section">
+        <div class="input-section-label">Revenue</div>
+        <div class="field-row">
+          <label>Weekly client revenue (£)</label>
+          <input type="number" id="weekly-revenue" class="input-field" value="1200" min="0" step="50">
+        </div>
+        <div class="field-row">
+          <label>Working weeks per year</label>
+          <input type="number" id="weeks-per-year" class="input-field" value="48" min="1" max="52">
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-section-label">Booth Rent Model</div>
+        <div class="field-row">
+          <label>Weekly booth rent (£)</label>
+          <input type="number" id="booth-rent" class="input-field" value="250" min="0" step="10">
+        </div>
+        <div class="field-row">
+          <label>Weekly supplies cost (£)</label>
+          <input type="number" id="supplies-booth" class="input-field" value="80" min="0" step="5">
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-section-label">Commission Model</div>
+        <div class="field-row">
+          <label>Studio commission (%)</label>
+          <input type="number" id="commission-pct" class="input-field" value="40" min="0" max="100" step="1">
+        </div>
+        <div class="field-row">
+          <label>Weekly supplies cost (£) <span class="field-hint">if artist supplies own</span></label>
+          <input type="number" id="supplies-comm" class="input-field" value="0" min="0" step="5">
+        </div>
+      </div>
+
+      <button id="calc-btn" class="primary-btn">Calculate</button>
+    </div>
+
+    <!-- Results -->
+    <div id="results-card" class="results-card" style="display:none">
+      <h2 class="card-title">Results</h2>
+      <div id="verdict-banner" class="verdict-banner"></div>
+      <div id="results-body" class="results-body"></div>
+      <div class="breakeven-section">
+        <div class="breakeven-label">Break-even revenue (weekly)</div>
+        <div id="breakeven-value" class="breakeven-value"></div>
+        <div class="breakeven-sub">Below this revenue, commission earns more. Above it, booth rent wins.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="/js/input-guards.js"></script>
+<script src="/tools/booth-rent-calculator/js/app.js"></script>
+</body>
+</html>
