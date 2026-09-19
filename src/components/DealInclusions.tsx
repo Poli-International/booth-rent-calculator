@@ -6,14 +6,8 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Sparkles, Package, HelpCircle } from 'lucide-react';
 import { InclusionItem, PayerType } from '../types';
-import { t, getCurrencySymbol } from '../i18n/translations';
-import {
-  computeItemCosts,
-  formatCurrency,
-  inclusionLabel,
-  BASELINE_INCLUSION_IDS,
-  STANDARD_PIERCING_KIT,
-} from '../utils/calculator';
+import { t } from '../i18n/translations';
+import { formatCurrency, STANDARD_PIERCING_KIT } from '../utils/calculator';
 
 interface DealInclusionsProps {
   inclusions: InclusionItem[];
@@ -54,12 +48,10 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
     const newItem: InclusionItem = {
       id: 'custom-' + Date.now(),
       nameKey: customName.trim(),
-      hintKey: customCostType === 'per_procedure' ? 'customSupplies.hintPerProcedure' : 'customSupplies.hintFixed',
+      hintKey: customCostType === 'per_procedure' ? 'Per-procedure consumable' : 'Fixed monthly consumable',
       monthlyCost: customCostType === 'fixed' ? customAmount : customAmount * monthlyProcedures,
       unitCost: customCostType === 'per_procedure' ? customAmount : undefined,
-      costPerProcedure: customCostType === 'per_procedure' ? customAmount : undefined,
       costType: customCostType,
-      isCustom: true,
       boothPayer: 'artist',
       commPayer: 'owner',
     };
@@ -130,7 +122,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
               <input
                 type="text"
                 required
-                placeholder={t('customSupplies.namePlaceholder')}
+                placeholder="e.g. Sterile Needles & Cannulas"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
                 className="w-full px-2.5 py-1.5 text-xs bg-[var(--bg-card)] border border-[var(--border)] rounded font-medium text-[var(--text-main)]"
@@ -143,9 +135,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
               </label>
               <select
                 value={customCostType}
-                onChange={(e) =>
-                  setCustomCostType(e.target.value === 'per_procedure' ? 'per_procedure' : 'fixed')
-                }
+                onChange={(e) => setCustomCostType(e.target.value as any)}
                 className="w-full px-2.5 py-1.5 text-xs bg-[var(--bg-card)] border border-[var(--border)] rounded font-medium text-[var(--text-main)] cursor-pointer"
               >
                 <option value="fixed">{t('customSupplies.fixedMonthly')}</option>
@@ -160,7 +150,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
                   : t('customSupplies.unitCost')}
               </label>
               <div className="flex items-center gap-1">
-                <span className="text-xs text-[var(--text-muted)]">{getCurrencySymbol()}</span>
+                <span className="text-xs text-[var(--text-muted)]">£</span>
                 <input
                   type="number"
                   step={customCostType === 'per_procedure' ? '0.10' : '5'}
@@ -194,9 +184,12 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
       {/* INCLUSIONS LIST */}
       <div className="space-y-4">
         {inclusions.map((item) => {
-          const isStandard = (BASELINE_INCLUSION_IDS as readonly string[]).includes(item.id);
-          // Priced by the shared engine so this row can never drift from the totals.
-          const itemTotal = computeItemCosts(item, monthlyRevenue, monthlyProcedures).total;
+          const isStandard = ['supplies', 'laundry', 'cardFees', 'utilities'].includes(item.id);
+          const itemTotal = item.isPercentage
+            ? monthlyRevenue * ((item.ratePct || 0) / 100)
+            : item.costType === 'per_procedure'
+            ? (item.unitCost || 0) * monthlyProcedures
+            : item.monthlyCost;
 
           return (
             <div
@@ -206,15 +199,15 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
                 <div>
                   <div className="font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
-                    <span>{inclusionLabel(item)}</span>
+                    <span>{isStandard ? t(item.nameKey as any) : item.nameKey}</span>
                     {!isStandard && (
                       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[var(--border)] text-[var(--text-muted)]">
-                        {t('inclusions.customBadge')}
+                        Custom
                       </span>
                     )}
                   </div>
                   <div className="text-xs text-[var(--text-muted)]">
-                    {t(item.hintKey)}
+                    {isStandard ? t(item.hintKey as any) : item.hintKey}
                   </div>
                 </div>
 
@@ -242,7 +235,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
                     </div>
                   ) : item.costType === 'per_procedure' ? (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-[var(--text-muted)]">{getCurrencySymbol()}</span>
+                      <span className="text-xs text-[var(--text-muted)]">£</span>
                       <input
                         type="number"
                         step="0.10"
@@ -256,12 +249,9 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
                         }
                         className="w-20 min-h-[44px] px-2 py-1 text-sm bg-[var(--bg-card)] border border-[var(--border)] rounded text-[var(--text-main)] text-right font-mono"
                       />
-                      <span className="text-xs text-[var(--text-muted)]">/{t('common.procedureAbbr')}</span>
+                      <span className="text-xs text-[var(--text-muted)]">/proc</span>
                       <span className="text-xs font-semibold text-[var(--text-main)] ml-1">
-                        {t('inclusions.perProcedureTotal', {
-                          amount: formatCurrency(itemTotal),
-                          count: monthlyProcedures,
-                        })}
+                        (~{formatCurrency(itemTotal)}/mo @ {monthlyProcedures} procs)
                       </span>
                     </div>
                   ) : (
@@ -279,7 +269,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
                         }
                         className="w-22 min-h-[44px] px-2.5 py-1 text-sm bg-[var(--bg-card)] border border-[var(--border)] rounded text-[var(--text-main)] text-right font-mono"
                       />
-                      <span className="text-xs text-[var(--text-muted)]">{t('common.perMonth')}</span>
+                      <span className="text-xs text-[var(--text-muted)]">/mo</span>
                     </div>
                   )}
 
@@ -287,7 +277,7 @@ export const DealInclusions: React.FC<DealInclusionsProps> = ({
                     <button
                       type="button"
                       onClick={() => removeItem(item.id)}
-                      aria-label={t('inclusions.removeAria')}
+                      aria-label="Remove consumable item"
                       className="text-[var(--text-muted)] hover:text-red-500 p-2 cursor-pointer transition-colors"
                     >
                       <Trash2 size={16} />
