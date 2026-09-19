@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Bookmark, Check, AlertTriangle, FileSpreadsheet, FileCode, FolderOpen } from 'lucide-react';
+import { Share2, Bookmark, Download, Check, FileSpreadsheet, FileCode, FolderOpen } from 'lucide-react';
 import { DealParameters, RealisticMonthParams, InclusionItem, CalculationModel } from '../types';
 import {
   encodeStateToUrl,
@@ -9,9 +9,8 @@ import {
   SavedDealPreset,
   exportToCsv,
   exportToJson,
-  formatCurrency,
 } from '../utils/calculator';
-import { t, resolveName } from '../i18n/translations';
+import { t } from '../i18n/translations';
 
 interface PresetAndShareBarProps {
   deal: DealParameters;
@@ -32,7 +31,7 @@ export const PresetAndShareBar: React.FC<PresetAndShareBarProps> = ({
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   const [presetName, setPresetName] = useState('');
-  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [copiedToast, setCopiedToast] = useState(false);
 
   useEffect(() => {
     setPresets(getSavedPresets());
@@ -40,20 +39,10 @@ export const PresetAndShareBar: React.FC<PresetAndShareBarProps> = ({
 
   const handleShare = () => {
     const url = encodeStateToUrl({ deal, realisticParams });
-    const finish = (state: 'copied' | 'failed') => {
-      setShareState(state);
-      setTimeout(() => setShareState('idle'), 4000);
-    };
-    // Clipboard access is refused on insecure origins and inside sandboxed
-    // frames. Without a rejection handler that failure used to be silent.
-    if (!navigator.clipboard?.writeText) {
-      finish('failed');
-      return;
-    }
-    navigator.clipboard.writeText(url).then(
-      () => finish('copied'),
-      () => finish('failed')
-    );
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedToast(true);
+      setTimeout(() => setCopiedToast(false), 3000);
+    });
   };
 
   const handleSavePreset = (e: React.FormEvent) => {
@@ -108,21 +97,13 @@ export const PresetAndShareBar: React.FC<PresetAndShareBarProps> = ({
           type="button"
           id="btn-share-deal-link"
           onClick={handleShare}
-          title={shareState === 'copied' ? t('presets.shareSuccess') : undefined}
           className="px-2.5 py-1.5 rounded-md bg-[var(--bg-app)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-main)] font-semibold flex items-center gap-1.5 hover:bg-[var(--border)]/50 transition-all cursor-pointer min-h-[44px] sm:min-h-0"
         >
-          {shareState === 'copied' ? (
+          {copiedToast ? (
             <>
               <Check size={14} className="text-emerald-500" />
               <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                 {t('common.copied')}
-              </span>
-            </>
-          ) : shareState === 'failed' ? (
-            <>
-              <AlertTriangle size={14} className="text-rose-500" />
-              <span className="text-rose-600 dark:text-rose-400 font-bold">
-                {t('common.copyFailed')}
               </span>
             </>
           ) : (
@@ -144,41 +125,35 @@ export const PresetAndShareBar: React.FC<PresetAndShareBarProps> = ({
                 {t('presets.emptyList')}
               </div>
             ) : (
-              presets.map((p) => {
-                const label = resolveName(p.name, p.nameKey);
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      onLoadDeal(p.deal, p.realisticParams);
-                      setShowPresetsMenu(false);
-                    }}
-                    className="p-2 rounded hover:bg-[var(--bg-app)] cursor-pointer flex items-center justify-between group transition-colors"
-                  >
-                    <div className="truncate mr-2">
-                      <span className="font-bold text-[var(--text-main)] block truncate">
-                        {label}
-                      </span>
-                      <span className="text-[10px] text-[var(--text-muted)]">
-                        {t('presets.itemMeta', {
-                          rent: formatCurrency(p.deal.weeklyRent),
-                          pct: p.deal.commissionPct,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={(e) => handleDeletePreset(p.id, e)}
-                        aria-label={t('presets.deleteAria', { name: label })}
-                        className="text-[var(--text-muted)] hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        ×
-                      </button>
-                    </div>
+              presets.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    onLoadDeal(p.deal, p.realisticParams);
+                    setShowPresetsMenu(false);
+                  }}
+                  className="p-2 rounded hover:bg-[var(--bg-app)] cursor-pointer flex items-center justify-between group transition-colors"
+                >
+                  <div className="truncate mr-2">
+                    <span className="font-bold text-[var(--text-main)] block truncate">
+                      {p.name}
+                    </span>
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      £{p.deal.weeklyRent}/wk · {p.deal.commissionPct}%
+                    </span>
                   </div>
-                );
-              })
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeletePreset(p.id, e)}
+                      aria-label={`Delete ${p.name}`}
+                      className="text-[var(--text-muted)] hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}
@@ -220,7 +195,7 @@ export const PresetAndShareBar: React.FC<PresetAndShareBarProps> = ({
 
             <div>
               <label className="block text-xs text-[var(--text-muted)] mb-1">
-                {t('presets.nameLabel')}
+                Preset Name
               </label>
               <input
                 type="text"
