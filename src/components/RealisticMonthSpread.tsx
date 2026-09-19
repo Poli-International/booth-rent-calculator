@@ -24,10 +24,7 @@ export const RealisticMonthSpread: React.FC<RealisticMonthSpreadProps> = ({
   scenarios,
   onUpdateParams,
 }) => {
-  const updateField = <K extends keyof RealisticMonthParams>(
-    key: K,
-    value: RealisticMonthParams[K]
-  ) => {
+  const updateField = (key: keyof RealisticMonthParams, value: any) => {
     onUpdateParams({ ...params, [key]: value });
   };
 
@@ -184,7 +181,7 @@ export const RealisticMonthSpread: React.FC<RealisticMonthSpreadProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-bold text-sm text-[var(--text-main)]">
-                    {t(sc.labelKey)}
+                    {t(sc.labelKey as any)}
                   </span>
                   {isExpected && (
                     <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[var(--primary)] bg-opacity-20 text-[var(--primary)]">
@@ -193,7 +190,7 @@ export const RealisticMonthSpread: React.FC<RealisticMonthSpreadProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-[var(--text-muted)] mb-2.5">
-                  {t(sc.descKey)}
+                  {t(sc.descKey as any)}
                 </p>
 
                 {/* Scenario Metrics */}
