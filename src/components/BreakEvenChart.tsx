@@ -7,15 +7,13 @@
 import React from 'react';
 import { DealParameters, InclusionItem } from '../types';
 import { t } from '../i18n/translations';
-import { computeDealSide, formatWholeCurrency } from '../utils/calculator';
+import { formatWholeCurrency } from '../utils/calculator';
 
 interface BreakEvenChartProps {
   deal: DealParameters;
   inclusions: InclusionItem[];
   breakEvenMonthly: number | null;
   currentMonthlyRevenue: number;
-  /** Procedure volume used to price per-procedure consumables in the curves. */
-  monthlyProcedures?: number;
 }
 
 export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
@@ -23,7 +21,6 @@ export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
   inclusions,
   breakEvenMonthly,
   currentMonthlyRevenue,
-  monthlyProcedures = 40,
 }) => {
   // Chart dimensions & internal coordinate space
   const w = 680;
@@ -44,27 +41,48 @@ export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
   );
   const maxRev = Math.ceil((maxRef * 1.6) / 1000) * 1000;
 
-  // Sample points across revenue range.
-  // Every curve is read straight out of computeDealSide, so the chart can never
-  // disagree with the numbers reported elsewhere. Deriving the inclusion
-  // aggregates by hand previously left the two owner curves with no expenses
-  // at all and priced the commission curve off the wrong payer column.
+  // Sample points across revenue range
   const numSteps = 8;
   const step = maxRev / numSteps;
   const pointsData: Array<{ rev: number; artistBooth: number; artistComm: number; ownerBooth: number; ownerComm: number }> = [];
 
+  const monthlyRent = (deal.weeklyRent * deal.weeksPerYear) / 12;
+  const commRate = deal.commissionPct / 100;
+
+  // Aggregate inclusion costs
+  let fixedInclusionsArtist = 0;
+  let fixedInclusionsOwner = 0;
+  let pctInclusionsArtist = 0;
+  let pctInclusionsOwner = 0;
+
+  inclusions.forEach((item) => {
+    const isArtist = item.boothPayer === 'artist';
+    const isSplit = item.boothPayer === 'split';
+
+    if (item.isPercentage) {
+      const rate = item.ratePct / 100;
+      if (isArtist) pctInclusionsArtist += rate;
+      else if (isSplit) pctInclusionsArtist += rate * 0.5;
+    } else {
+      if (isArtist) fixedInclusionsArtist += item.monthlyCost;
+      else if (isSplit) fixedInclusionsArtist += item.monthlyCost * 0.5;
+    }
+  });
+
   for (let i = 0; i <= numSteps; i++) {
     const rev = i * step;
-    const boothSide = computeDealSide(rev, deal, inclusions, 'booth', monthlyProcedures);
-    const commSide = computeDealSide(rev, deal, inclusions, 'comm', monthlyProcedures);
 
-    pointsData.push({
-      rev,
-      artistBooth: boothSide.artist.netIncomeMonthly,
-      artistComm: commSide.artist.netIncomeMonthly,
-      ownerBooth: boothSide.owner.netIncomeMonthly,
-      ownerComm: commSide.owner.netIncomeMonthly,
-    });
+    // Booth: Artist = rev - rent - expenses
+    const ab = rev - monthlyRent - (fixedInclusionsArtist + rev * pctInclusionsArtist);
+    // Commission: Artist = rev * (1 - comm) - expenses
+    const ac = rev * (1 - commRate) - (fixedInclusionsArtist + rev * pctInclusionsArtist);
+
+    // Owner Booth
+    const ob = monthlyRent - fixedInclusionsOwner;
+    // Owner Commission
+    const oc = rev * commRate - fixedInclusionsOwner;
+
+    pointsData.push({ rev, artistBooth: ab, artistComm: ac, ownerBooth: ob, ownerComm: oc });
   }
 
   // Find min/max for Y scale
@@ -92,10 +110,7 @@ export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
 
   // Coordinates of Break-Even
   const beX = breakEvenMonthly !== null && breakEvenMonthly <= maxRev ? getX(breakEvenMonthly) : null;
-  const beNet =
-    breakEvenMonthly !== null
-      ? computeDealSide(breakEvenMonthly, deal, inclusions, 'comm', monthlyProcedures).artist.netIncomeMonthly
-      : null;
+  const beNet = breakEvenMonthly !== null ? breakEvenMonthly * (1 - commRate) - (fixedInclusionsArtist + breakEvenMonthly * pctInclusionsArtist) : null;
   const beY = beNet !== null ? getY(beNet) : null;
 
   // Coordinates of Current Revenue
@@ -127,7 +142,7 @@ export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
               {t('breakEven.monthlyLabel')}
             </span>
             <span className="text-sm font-extrabold text-[var(--text-main)]">
-              {formatWholeCurrency(breakEvenMonthly)} {t('common.perMonth')}
+              {formatWholeCurrency(breakEvenMonthly)} / mo
             </span>
           </div>
         )}
