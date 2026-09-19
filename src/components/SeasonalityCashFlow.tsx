@@ -124,20 +124,20 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
       <div className="mb-6 p-4 bg-[var(--bg-app)] border border-[var(--border)] rounded-lg">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <span className="text-xs font-bold text-[var(--text-main)]">
-            {t('seasonality.chartTitle')}
+            12-Month Net Cash Flow Comparison
           </span>
           <div className="flex items-center gap-4 text-[11px]">
             <span className="flex items-center gap-1.5 font-medium text-[var(--text-muted)]">
               <span className="w-3 h-3 rounded bg-emerald-500 inline-block" />
-              {t('seasonality.legendBoothNet')}
+              Booth Net
             </span>
             <span className="flex items-center gap-1.5 font-medium text-[var(--text-muted)]">
               <span className="w-3 h-3 rounded bg-sky-500 inline-block" />
-              {t('seasonality.legendCommNet')}
+              Commission Net
             </span>
             <span className="flex items-center gap-1.5 font-medium text-[var(--text-muted)]">
               <span className="w-3 h-3 rounded bg-amber-400 inline-block" />
-              {t('seasonality.legendRentAway')}
+              Rent While Away
             </span>
           </div>
         </div>
@@ -155,13 +155,13 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
                   <div
                     style={{ height: `${boothHeightPct}%` }}
                     className="w-1/2 max-w-[14px] bg-emerald-500 rounded-t transition-all hover:opacity-80"
-                    title={`${t('seasonality.legendBoothNet')}: ${formatCurrency(m.boothArtistNet)}`}
+                    title={`Booth Net: ${formatCurrency(m.boothArtistNet)}`}
                   />
                   {/* Commission bar */}
                   <div
                     style={{ height: `${commHeightPct}%` }}
                     className="w-1/2 max-w-[14px] bg-sky-500 rounded-t transition-all hover:opacity-80"
-                    title={`${t('seasonality.legendCommNet')}: ${formatCurrency(m.commArtistNet)}`}
+                    title={`Commission Net: ${formatCurrency(m.commArtistNet)}`}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-[var(--text-muted)] mt-1 truncate">
@@ -169,7 +169,7 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
                 </span>
                 {m.weeksOff > 0 && (
                   <span className="text-[9px] font-black text-amber-600 dark:text-amber-400">
-                    {t('seasonality.weeksOffShort', { count: m.weeksOff })}
+                    {m.weeksOff}w off
                   </span>
                 )}
               </div>
@@ -211,17 +211,13 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
                     onChange={(e) => updateMonth(idx, { multiplier: parseFloat(e.target.value) })}
                     className="bg-[var(--bg-app)] border border-[var(--border)] rounded px-1.5 py-0.5 text-xs text-[var(--text-main)] font-medium cursor-pointer"
                   >
-                    <option value="0.6">{t('seasonality.demand0_6')}</option>
-                    <option value="0.75">{t('seasonality.demand0_75')}</option>
-                    <option value="0.8">{t('seasonality.demand0_8')}</option>
-                    <option value="0.85">{t('seasonality.demand0_85')}</option>
-                    <option value="0.95">{t('seasonality.demand0_95')}</option>
-                    <option value="1">{t('seasonality.demand1_0')}</option>
-                    <option value="1.05">{t('seasonality.demand1_05')}</option>
-                    <option value="1.1">{t('seasonality.demand1_1')}</option>
-                    <option value="1.15">{t('seasonality.demand1_15')}</option>
-                    <option value="1.2">{t('seasonality.demand1_2')}</option>
-                    <option value="1.3">{t('seasonality.demand1_3')}</option>
+                    <option value="0.6">0.6x (Very Slow)</option>
+                    <option value="0.75">0.75x (Slow)</option>
+                    <option value="0.85">0.85x (Quiet)</option>
+                    <option value="1.0">1.0x (Average)</option>
+                    <option value="1.1">1.1x (Steady)</option>
+                    <option value="1.2">1.2x (Busy)</option>
+                    <option value="1.3">1.3x (Holiday Surge)</option>
                   </select>
                 </td>
 
@@ -231,11 +227,11 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
                     onChange={(e) => updateMonth(idx, { weeksOff: parseInt(e.target.value, 10) })}
                     className="bg-[var(--bg-app)] border border-[var(--border)] rounded px-1.5 py-0.5 text-xs text-[var(--text-main)] font-medium cursor-pointer"
                   >
-                    <option value="0">{t('seasonality.weeksOff0')}</option>
-                    <option value="1">{t('seasonality.weeksOff1')}</option>
-                    <option value="2">{t('seasonality.weeksOff2')}</option>
-                    <option value="3">{t('seasonality.weeksOff3')}</option>
-                    <option value="4">{t('seasonality.weeksOff4')}</option>
+                    <option value="0">0 weeks</option>
+                    <option value="1">1 week</option>
+                    <option value="2">2 weeks</option>
+                    <option value="3">3 weeks</option>
+                    <option value="4">4 weeks (Full month off)</option>
                   </select>
                 </td>
 
@@ -252,7 +248,7 @@ export const SeasonalityCashFlow: React.FC<SeasonalityCashFlowProps> = ({
                 </td>
 
                 <td className="py-2 px-2.5 text-right font-mono font-bold text-amber-600 dark:text-amber-400">
-                  {m.rentOwedWhileAway > 0 ? formatCurrency(m.rentOwedWhileAway) : formatCurrency(0)}
+                  {m.rentOwedWhileAway > 0 ? formatCurrency(m.rentOwedWhileAway) : '£0.00'}
                 </td>
               </tr>
             ))}
