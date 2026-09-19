@@ -21,8 +21,9 @@ export const RelatedTools: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Studio Pricing Benchmark */}
         <a
-          href="https://poliinternational.com/studio-pricing-benchmark/"
-          target="_top"
+          href="https://poliinternational.com/tools/studio-pricing-benchmark/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="p-3.5 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col justify-between group no-underline min-h-[60px]"
         >
           <div>
@@ -41,8 +42,9 @@ export const RelatedTools: React.FC = () => {
 
         {/* Tax Deduction Tracker */}
         <a
-          href="https://poliinternational.com/tax-deduction-tracker/"
-          target="_top"
+          href="https://poliinternational.com/tools/tax-deduction-tracker/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="p-3.5 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col justify-between group no-underline min-h-[60px]"
         >
           <div>
@@ -61,8 +63,9 @@ export const RelatedTools: React.FC = () => {
 
         {/* Equipment ROI Calculator */}
         <a
-          href="https://poliinternational.com/equipment-roi-calculator/"
-          target="_top"
+          href="https://poliinternational.com/tools/equipment-roi-calculator/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="p-3.5 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col justify-between group no-underline min-h-[60px]"
         >
           <div>
