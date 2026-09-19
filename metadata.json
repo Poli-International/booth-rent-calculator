@@ -2,5 +2,5 @@
   "name": "Booth Rent vs Commission Calculator",
   "description": "Compare booth rent and commission models side-by-side. Enter your weekly revenue, rent, commission %, and consumables to calculate net take-home pay and break-even revenue.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
