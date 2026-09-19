@@ -1,37 +1,87 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
-import { defineConfig } from 'vite';
+import {defineConfig, Plugin} from 'vite';
+
+// LINT.IfChange(aistudio_media_plugin)
+function aistudioMediaPlugin(): Plugin {
+  return {
+    name: 'vite-plugin-aistudio-media',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url && req.url.startsWith('/assets/aistudio/')) {
+          const rawPath = req.url.split('?')[0].split('#')[0];
+          try {
+            const decodedPath = decodeURIComponent(rawPath);
+            const relativePath = decodedPath.replace(/^\//, '');
+            const aistudioDir = path.resolve(
+              __dirname,
+              'public',
+              'assets',
+              'aistudio',
+            );
+            const filePath = path.resolve(__dirname, 'public', relativePath);
+            if (
+              filePath.startsWith(aistudioDir + path.sep) &&
+              fs.existsSync(filePath) &&
+              fs.statSync(filePath).isFile()
+            ) {
+              const ext = path.extname(filePath).toLowerCase();
+              const mimeMap: Record<string, string> = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.svg': 'image/svg+xml',
+                '.bmp': 'image/bmp',
+                '.ico': 'image/x-icon',
+                '.mp4': 'video/mp4',
+                '.webm': 'video/webm',
+                '.ogv': 'video/ogg',
+                '.mp3': 'audio/mpeg',
+                '.wav': 'audio/wav',
+                '.ogg': 'audio/ogg',
+                '.pdf': 'application/pdf',
+              };
+              res.setHeader(
+                'Content-Type',
+                mimeMap[ext] || 'application/octet-stream',
+              );
+              res.setHeader('Cache-Control', 'no-cache');
+              fs.createReadStream(filePath).pipe(res);
+              return;
+            }
+          } catch {
+            // Fall through if URI decoding or file access fails
+          }
+        }
+        next();
+      });
+    },
+  };
+}
+// LINT.ThenChange(//depot/google3/java/com/google/alkali/boq/makersuite/applet_dev_service/templates/initializers/react_theme/vite.config.ts:aistudio_media_plugin)
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    // Served from /tools/booth-rent-calculator/ on poliinternational.com.
+    base: '/tools/booth-rent-calculator/',
+    plugins: [react(), tailwindcss(), aistudioMediaPlugin()],
+    // Tailwind 4 runs through the vite plugin; stop postcss walking up into
+    // the parent website repo and picking up its Tailwind 3 config.
+    css: {postcss: {plugins: []}},
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    build: {
-      rollupOptions: {
-        output: {
-          // Split third-party code out of the application chunk. Without this
-          // the single bundle lands near 573 kB, above the 512 KiB ceiling this
-          // project holds every shipped text file to. Matching on the resolved
-          // module path is deliberate: naming the bare "react-dom" specifier
-          // only catches its re-export stub, because the real runtime lives in
-          // react-dom/cjs/react-dom-client.production.js.
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return undefined;
-            if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'react';
-            return 'vendor';
-          },
-        },
-      },
-    },
     server: {
-      // HMR can be disabled via the DISABLE_HMR env var, which also stops file
-      // watching so an external editor writing files does not cause flicker.
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
