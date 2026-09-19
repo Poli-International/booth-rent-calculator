@@ -53,17 +53,13 @@ export interface DealParameters {
 
 export interface CompetingOffer {
   id: string;
-  /** Name typed by the user. Wins over nameKey when present. */
-  name?: string;
-  /** Translation key for a seeded offer name, so it follows the active language. */
-  nameKey?: string;
-  /** Interpolation parameters for nameKey. */
-  nameParams?: Record<string, string | number>;
+  name: string;
   type: 'booth' | 'comm' | 'hybrid';
   weeklyRent: number;
   commissionPct: number;
   hybridBaseRent?: number;
   hybridCommPct?: number;
+  notes?: string;
 }
 
 export interface TaxSettings {
@@ -105,12 +101,7 @@ export interface SeasonalitySummary {
 
 export interface StudioChair {
   id: string;
-  /** Name typed by the user. Wins over nameKey when present. */
-  name?: string;
-  /** Translation key for a seeded station name, so it follows the active language. */
-  nameKey?: string;
-  /** Interpolation parameters for nameKey. */
-  nameParams?: Record<string, string | number>;
+  name: string;
   model: 'booth' | 'comm' | 'vacant';
   weeklyRent: number;
   commissionPct: number;
