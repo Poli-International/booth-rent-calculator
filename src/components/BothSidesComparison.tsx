@@ -74,7 +74,7 @@ export const BothSidesComparison: React.FC<BothSidesComparisonProps> = ({
                     <span className="text-xs uppercase font-bold text-[var(--text-muted)] block">{t('comparison.netTakeHome')}</span>
                     <span className="font-mono font-extrabold text-sm text-[var(--text-main)] block">
                       {formatCurrency(booth.artist.netIncomeMonthly)}
-                      <span className="text-xs font-normal text-[var(--text-muted)]"> {t('common.perMonth')}</span>
+                      <span className="text-xs font-normal text-[var(--text-muted)]"> /mo</span>
                     </span>
                     <span className="text-xs text-[var(--text-muted)]">
                       {t('comparison.retainedPct', { pct: booth.artist.retainedPct.toFixed(1) })}
@@ -102,7 +102,7 @@ export const BothSidesComparison: React.FC<BothSidesComparisonProps> = ({
                     <span className="text-xs uppercase font-bold text-[var(--text-muted)] block">{t('comparison.netTakeHome')}</span>
                     <span className="font-mono font-extrabold text-sm text-[var(--text-main)] block">
                       {formatCurrency(comm.artist.netIncomeMonthly)}
-                      <span className="text-xs font-normal text-[var(--text-muted)]"> {t('common.perMonth')}</span>
+                      <span className="text-xs font-normal text-[var(--text-muted)]"> /mo</span>
                     </span>
                     <span className="text-xs text-[var(--text-muted)]">
                       {t('comparison.retainedPct', { pct: comm.artist.retainedPct.toFixed(1) })}
@@ -164,7 +164,7 @@ export const BothSidesComparison: React.FC<BothSidesComparisonProps> = ({
                     <span className="text-xs uppercase font-bold text-[var(--text-muted)] block">{t('comparison.studioMargin')}</span>
                     <span className="font-mono font-extrabold text-sm text-[var(--text-main)] block">
                       {formatCurrency(booth.owner.netIncomeMonthly)}
-                      <span className="text-xs font-normal text-[var(--text-muted)]"> {t('common.perMonth')}</span>
+                      <span className="text-xs font-normal text-[var(--text-muted)]"> /mo</span>
                     </span>
                     <span className="text-xs text-[var(--text-muted)]">
                       {t('comparison.studioMarginPct', {
@@ -194,7 +194,7 @@ export const BothSidesComparison: React.FC<BothSidesComparisonProps> = ({
                     <span className="text-xs uppercase font-bold text-[var(--text-muted)] block">{t('comparison.studioMargin')}</span>
                     <span className="font-mono font-extrabold text-sm text-[var(--text-main)] block">
                       {formatCurrency(comm.owner.netIncomeMonthly)}
-                      <span className="text-xs font-normal text-[var(--text-muted)]"> {t('common.perMonth')}</span>
+                      <span className="text-xs font-normal text-[var(--text-muted)]"> /mo</span>
                     </span>
                     <span className="text-xs text-[var(--text-muted)]">
                       {t('comparison.studioMarginPct', {
