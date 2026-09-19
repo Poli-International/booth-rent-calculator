@@ -6,16 +6,8 @@
 
 import React from 'react';
 import { CalculationModel, DealParameters, RealisticMonthParams, InclusionItem } from '../types';
-import { t, getLocaleTag } from '../i18n/translations';
-import {
-  formatCurrency,
-  formatWholeCurrency,
-  computeItemCosts,
-  computeMonthlyProcedures,
-  inclusionLabel,
-  exportToCsv,
-  exportToJson,
-} from '../utils/calculator';
+import { t } from '../i18n/translations';
+import { formatCurrency, formatWholeCurrency, exportToCsv, exportToJson } from '../utils/calculator';
 import { Printer, X, FileSpreadsheet, FileCode } from 'lucide-react';
 
 interface PrintableSummaryProps {
@@ -33,17 +25,11 @@ export const PrintableSummary: React.FC<PrintableSummaryProps> = ({
   inclusions,
   onClose,
 }) => {
-  // Date follows the active language, so a French summary does not print an
-  // English-ordered date. Previously hardcoded to 'en-GB' in every locale.
-  const currentDate = new Date().toLocaleDateString(getLocaleTag(), {
+  const currentDate = new Date().toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-
-  // Same completed-procedure count the on-screen panels use, so a per-procedure
-  // consumable is priced identically on the sheet and in the live totals.
-  const monthlyProcedures = computeMonthlyProcedures(realisticParams);
 
   const handlePrint = () => {
     window.print();
@@ -128,7 +114,7 @@ export const PrintableSummary: React.FC<PrintableSummaryProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 p-2.5 border border-neutral-300 rounded text-xs print:p-1.5 print:mb-2 print:border-black print:text-[8.5pt]">
         <div>
           <span className="text-neutral-500 print:text-neutral-700 block text-xs uppercase font-bold">{t('print.paramWeeklyRent')}</span>
-          <span className="font-bold text-sm print:text-xs font-mono">{formatCurrency(deal.weeklyRent)} {t('common.perWeek')}</span>
+          <span className="font-bold text-sm print:text-xs font-mono">{formatCurrency(deal.weeklyRent)} / wk</span>
         </div>
         <div>
           <span className="text-neutral-500 print:text-neutral-700 block text-xs uppercase font-bold">{t('print.paramCommSplit')}</span>
@@ -141,9 +127,7 @@ export const PrintableSummary: React.FC<PrintableSummaryProps> = ({
         <div>
           <span className="text-neutral-500 print:text-neutral-700 block text-xs uppercase font-bold">{t('print.paramBreakEvenRevenue')}</span>
           <span className="font-bold text-sm print:text-xs font-mono">
-            {model.breakEvenMonthly
-              ? `${formatWholeCurrency(model.breakEvenMonthly)} ${t('common.perMonth')}`
-              : t('print.notApplicable')}
+            {model.breakEvenMonthly ? `${formatWholeCurrency(model.breakEvenMonthly)} / mo` : t('print.notApplicable')}
           </span>
         </div>
       </div>
@@ -235,30 +219,22 @@ export const PrintableSummary: React.FC<PrintableSummaryProps> = ({
               </tr>
             </thead>
             <tbody>
-              {inclusions.map((item) => {
-                // Priced by the shared engine, so a per-procedure consumable
-                // shows its real monthly cost here rather than the fixed
-                // `monthlyCost` placeholder it is seeded with.
-                const itemTotal = computeItemCosts(item, model.grossMonthlyRevenue, monthlyProcedures).total;
-                return (
-                  <tr key={item.id}>
-                    <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 font-medium">
-                      {inclusionLabel(item)}
-                    </td>
-                    <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-mono">
-                      {item.isPercentage
-                        ? t('print.ratePctOfGross', { rate: item.ratePct ?? 0 })
-                        : formatCurrency(itemTotal)}
-                    </td>
-                    <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-semibold uppercase text-xs print:text-[8pt]">
-                      {item.boothPayer === 'artist' ? t('inclusions.payerArtist') : item.boothPayer === 'owner' ? t('inclusions.payerOwner') : t('inclusions.payerSplit')}
-                    </td>
-                    <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-semibold uppercase text-xs print:text-[8pt]">
-                      {item.commPayer === 'artist' ? t('inclusions.payerArtist') : item.commPayer === 'owner' ? t('inclusions.payerOwner') : t('inclusions.payerSplit')}
-                    </td>
-                  </tr>
-                );
-              })}
+              {inclusions.map((item) => (
+                <tr key={item.id}>
+                  <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 font-medium">
+                    {t(item.nameKey as any)}
+                  </td>
+                  <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-mono">
+                    {item.isPercentage ? t('print.ratePctOfGross', { rate: item.ratePct }) : formatCurrency(item.monthlyCost)}
+                  </td>
+                  <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-semibold uppercase text-xs print:text-[8pt]">
+                    {item.boothPayer === 'artist' ? t('inclusions.payerArtist') : item.boothPayer === 'owner' ? t('inclusions.payerOwner') : t('inclusions.payerSplit')}
+                  </td>
+                  <td className="border border-neutral-300 print:border-black p-1.5 print:p-1 text-center font-semibold uppercase text-xs print:text-[8pt]">
+                    {item.commPayer === 'artist' ? t('inclusions.payerArtist') : item.commPayer === 'owner' ? t('inclusions.payerOwner') : t('inclusions.payerSplit')}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
