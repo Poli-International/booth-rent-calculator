@@ -20,14 +20,12 @@ import {
   StudioFloorModel,
   CompetingOffer,
 } from '../types';
-import { t, resolveName, getLanguage, getCurrencyCode, getCurrencySymbol } from '../i18n/translations';
-import type { SupportedLanguage } from '../i18n/translations';
 
 export const DEFAULT_INCLUSIONS: InclusionItem[] = [
   {
     id: 'supplies',
-    nameKey: 'inclusions.supplies',
-    hintKey: 'inclusions.suppliesHint',
+    nameKey: 'inclusionSupplies',
+    hintKey: 'inclusionSuppliesHint',
     monthlyCost: 320,
     isPercentage: false,
     boothPayer: 'artist',
@@ -35,8 +33,8 @@ export const DEFAULT_INCLUSIONS: InclusionItem[] = [
   },
   {
     id: 'laundry',
-    nameKey: 'inclusions.laundry',
-    hintKey: 'inclusions.laundryHint',
+    nameKey: 'inclusionLaundry',
+    hintKey: 'inclusionLaundryHint',
     monthlyCost: 110,
     isPercentage: false,
     boothPayer: 'artist',
@@ -44,8 +42,8 @@ export const DEFAULT_INCLUSIONS: InclusionItem[] = [
   },
   {
     id: 'cardFees',
-    nameKey: 'inclusions.cardFees',
-    hintKey: 'inclusions.cardFeesHint',
+    nameKey: 'inclusionCardFees',
+    hintKey: 'inclusionCardFeesHint',
     monthlyCost: 0,
     isPercentage: true,
     ratePct: 1.75,
@@ -54,8 +52,8 @@ export const DEFAULT_INCLUSIONS: InclusionItem[] = [
   },
   {
     id: 'utilities',
-    nameKey: 'inclusions.utilities',
-    hintKey: 'inclusions.utilitiesHint',
+    nameKey: 'inclusionUtilities',
+    hintKey: 'inclusionUtilitiesHint',
     monthlyCost: 180,
     isPercentage: false,
     boothPayer: 'owner',
@@ -66,8 +64,8 @@ export const DEFAULT_INCLUSIONS: InclusionItem[] = [
 export const STANDARD_PIERCING_KIT: InclusionItem[] = [
   {
     id: 'kit-needles',
-    nameKey: 'kit.needlesName',
-    hintKey: 'kit.needlesHint',
+    nameKey: 'Sterile Needles & Cannulas',
+    hintKey: 'Pre-sterilised single-use surgical piercing needles',
     monthlyCost: 90,
     costType: 'per_procedure',
     unitCost: 1.5,
@@ -78,8 +76,8 @@ export const STANDARD_PIERCING_KIT: InclusionItem[] = [
   },
   {
     id: 'kit-gloves',
-    nameKey: 'kit.glovesName',
-    hintKey: 'kit.glovesHint',
+    nameKey: 'Nitrile Gloves & Medical Barrier Film',
+    hintKey: 'Sterile procedure gloves, barrier film, tray sleeves',
     monthlyCost: 72,
     costType: 'per_procedure',
     unitCost: 1.2,
@@ -90,8 +88,8 @@ export const STANDARD_PIERCING_KIT: InclusionItem[] = [
   },
   {
     id: 'kit-prep',
-    nameKey: 'kit.prepName',
-    hintKey: 'kit.prepHint',
+    nameKey: 'Skin Antiseptic Prep & Gauze',
+    hintKey: 'Skin cleansing agents and sterile woven gauze swabs',
     monthlyCost: 48,
     costType: 'per_procedure',
     unitCost: 0.8,
@@ -102,8 +100,8 @@ export const STANDARD_PIERCING_KIT: InclusionItem[] = [
   },
   {
     id: 'kit-autoclave',
-    nameKey: 'kit.autoclaveName',
-    hintKey: 'kit.autoclaveHint',
+    nameKey: 'Autoclave Pouches & Spore Strips',
+    hintKey: 'Class 4 & 5 chemical indicators and biological spore vials',
     monthlyCost: 45,
     costType: 'fixed',
     unitCost: 0,
@@ -112,28 +110,6 @@ export const STANDARD_PIERCING_KIT: InclusionItem[] = [
     commPayer: 'owner',
   },
 ];
-
-/**
- * The four baseline consumable rows that ship with the calculator.
- * Everything else in the list is an add-on: a loaded kit line or a line item
- * the user typed themselves.
- */
-export const BASELINE_INCLUSION_IDS = ['supplies', 'laundry', 'cardFees', 'utilities'] as const;
-
-/**
- * Display label for an inclusion row, in the active language.
- *
- * A seeded row (baseline or kit) stores a translation key in `nameKey`. A row
- * the user created stores the typed name itself in `nameKey` under an id of
- * `custom-<timestamp>`, and must be rendered verbatim. Testing the id rather
- * than `isCustom` is deliberate: the kit rows also carry `isCustom: true`
- * because they are optional add-ons, so that flag cannot distinguish a
- * translation key from a user-typed label. Getting this wrong printed the raw
- * key `kit.needlesName` on screen and in the printed summary.
- */
-export function inclusionLabel(item: InclusionItem): string {
-  return item.id.startsWith('custom-') ? item.nameKey : t(item.nameKey);
-}
 
 export function computeCommissionAmount(monthlyRevenue: number, deal: DealParameters): number {
   // 1. Walk-in split vs custom booking
@@ -180,30 +156,6 @@ export function computeCommissionAmount(monthlyRevenue: number, deal: DealParame
   return comm;
 }
 
-/**
- * Completed procedures per month, from the realistic-month inputs.
- *
- * Single source of truth: the per-procedure consumable cost, the break-even
- * chart and the printed summary must all divide by the same number, otherwise
- * the sheet disagrees with the screen.
- */
-export function computeMonthlyProcedures(params: RealisticMonthParams): number {
-  const completed =
-    params.workingDaysPerMonth *
-    params.apptsPerDay *
-    (1 - (params.noShowRatePct || 0) / 100);
-  return Math.max(0, Math.round(completed));
-}
-
-/**
- * Total monthly cost of one inclusion item.
- *
- * Per-procedure items are detected from either `costType: 'per_procedure'` or
- * the legacy `isPerProcedure` flag, and priced from `costPerProcedure` falling
- * back to `unitCost`. Previously only `isPerProcedure` was honoured, so every
- * standard-kit item silently fell through to its fixed `monthlyCost` and
- * editing a unit price changed nothing.
- */
 export function computeItemCosts(
   item: InclusionItem,
   monthlyRevenue: number,
@@ -212,9 +164,8 @@ export function computeItemCosts(
   let total = 0;
   if (item.isPercentage) {
     total = monthlyRevenue * ((item.ratePct || 0) / 100);
-  } else if (item.costType === 'per_procedure' || item.isPerProcedure) {
-    const unit = item.costPerProcedure ?? item.unitCost ?? 0;
-    total = unit > 0 ? unit * monthlyProcedures : item.monthlyCost || 0;
+  } else if (item.isPerProcedure && item.costPerProcedure !== undefined) {
+    total = item.costPerProcedure * monthlyProcedures;
   } else {
     total = item.monthlyCost;
   }
@@ -259,18 +210,7 @@ export function computeDealSide(
     const aCost = model === 'booth' ? costs.boothArtist : costs.commArtist;
     const oCost = model === 'booth' ? costs.boothOwner : costs.commOwner;
 
-    // Anything the user added themselves — or that came from the standard
-    // piercing kit — is a clinical consumable and belongs in the supplies
-    // bucket. Previously only ids prefixed `cust-supply` qualified, so custom
-    // line items created as `custom-<timestamp>` were misfiled as utilities.
-    const isConsumable =
-      item.id === 'supplies' ||
-      item.isCustom === true ||
-      item.id.startsWith('custom-') ||
-      item.id.startsWith('cust-supply') ||
-      item.id.startsWith('kit-');
-
-    if (isConsumable) {
+    if (item.id === 'supplies' || (item.isCustom && item.id.startsWith('cust-supply'))) {
       suppliesArtist += aCost;
       suppliesOwner += oCost;
     } else if (item.id === 'laundry') {
@@ -398,8 +338,7 @@ export function computeDealSide(
 
 export function computeBreakEven(
   deal: DealParameters,
-  inclusions: InclusionItem[],
-  monthlyProcedures: number = 40
+  inclusions: InclusionItem[]
 ): { breakEvenMonthly: number | null; breakEvenWeekly: number | null; reachable: boolean } {
   let annualRent = deal.weeklyRent * deal.weeksPerYear;
   let monthlyRent = annualRent / 12;
@@ -424,14 +363,7 @@ export function computeBreakEven(
       cardFractionBooth = item.boothPayer === 'artist' ? 1 : item.boothPayer === 'split' ? 0.5 : 0;
       cardFractionComm = item.commPayer === 'artist' ? 1 : item.commPayer === 'split' ? 0.5 : 0;
     } else {
-      // Per-procedure items are constant with respect to revenue, so they belong
-      // in the fixed term here too — priced the same way computeItemCosts does,
-      // otherwise the crossover point would disagree with the drawn curves.
-      const unit = item.costPerProcedure ?? item.unitCost ?? 0;
-      const cost =
-        (item.costType === 'per_procedure' || item.isPerProcedure) && unit > 0
-          ? unit * monthlyProcedures
-          : item.monthlyCost || 0;
+      const cost = item.monthlyCost || 0;
       const bCost = item.boothPayer === 'artist' ? cost : item.boothPayer === 'split' ? cost * 0.5 : 0;
       const cCost = item.commPayer === 'artist' ? cost : item.commPayer === 'split' ? cost * 0.5 : 0;
       fixedIncBoothArtist += bCost;
@@ -485,11 +417,7 @@ export function computeFullModel(
   const commDeal = computeDealSide(grossMonthlyRevenue, deal, inclusions, 'comm', completedAppointments, taxSettings);
 
   // Break-even
-  const { breakEvenMonthly, breakEvenWeekly, reachable } = computeBreakEven(
-    deal,
-    inclusions,
-    completedAppointments
-  );
+  const { breakEvenMonthly, breakEvenWeekly, reachable } = computeBreakEven(deal, inclusions);
 
   // Scenarios for Realistic Month Spread
   // 1. Conservative (Slow): e.g. higher no-shows (+8%) and 15% fewer bookings
@@ -504,8 +432,8 @@ export function computeFullModel(
   const conservativeDelta = conservativeBooth.artist.netIncomeMonthly - conservativeComm.artist.netIncomeMonthly;
 
   const conservativeScenario: MonthSpreadScenario = {
-    labelKey: 'realistic.spreadConservative',
-    descKey: 'realistic.spreadConservativeDesc',
+    labelKey: 'spreadConservative',
+    descKey: 'spreadConservativeDesc',
     appointments: conservativeCompleted,
     grossRevenue: conservativeGross,
     booth: conservativeBooth,
@@ -516,8 +444,8 @@ export function computeFullModel(
   // 2. Expected (Baseline):
   const expectedDelta = boothDeal.artist.netIncomeMonthly - commDeal.artist.netIncomeMonthly;
   const expectedScenario: MonthSpreadScenario = {
-    labelKey: 'realistic.spreadExpected',
-    descKey: 'realistic.spreadExpectedDesc',
+    labelKey: 'spreadExpected',
+    descKey: 'spreadExpectedDesc',
     appointments: completedAppointments,
     grossRevenue: grossMonthlyRevenue,
     booth: boothDeal,
@@ -537,8 +465,8 @@ export function computeFullModel(
   const peakDelta = peakBooth.artist.netIncomeMonthly - peakComm.artist.netIncomeMonthly;
 
   const peakScenario: MonthSpreadScenario = {
-    labelKey: 'realistic.spreadPeak',
-    descKey: 'realistic.spreadPeakDesc',
+    labelKey: 'spreadPeak',
+    descKey: 'spreadPeakDesc',
     appointments: peakCompleted,
     grossRevenue: peakGross,
     booth: peakBooth,
@@ -550,16 +478,16 @@ export function computeFullModel(
   const warnings: string[] = [];
   const monthlyRent = (deal.weeklyRent * deal.weeksPerYear) / 12;
   if (monthlyRent > grossMonthlyRevenue && grossMonthlyRevenue > 0) {
-    warnings.push('warnings.warnRentExceedsRev');
+    warnings.push('warnRentExceedsRev');
   }
   if (deal.commissionPct >= 100) {
-    warnings.push('warnings.warnComm100');
+    warnings.push('warnComm100');
   }
   if (realisticParams.noShowRatePct > 35) {
-    warnings.push('warnings.warnHighNoShow');
+    warnings.push('warnHighNoShow');
   }
   if (grossMonthlyRevenue > 35000) {
-    warnings.push('warnings.warnHighRevenue');
+    warnings.push('warnHighRevenue');
   }
 
   return {
@@ -582,94 +510,45 @@ export function computeFullModel(
   };
 }
 
-/**
- * Tax constants for the estimated overlay. These are the figures for the
- * 2026/27 UK tax year and the 2026 US tax year, and they change annually —
- * they are estimates for planning, not a substitute for a filed return.
- *
- * Sources: HMRC personal allowance and basic rate limit frozen at 12,570 and
- * 50,270 to 2027/28; Class 4 NIC 6% between those points and 2% above. IRS
- * 2026 single-filer standard deduction 16,100; Social Security wage base
- * 184,500; self-employment tax 15.3% on 92.35% of net profit.
- */
-const UK_PERSONAL_ALLOWANCE = 12570;
-const UK_BASIC_RATE_LIMIT = 50270;
-const UK_BASIC_RATE_COMBINED = 0.26; // 20% income tax + 6% Class 4 NIC
-const UK_HIGHER_RATE_COMBINED = 0.42; // 40% income tax + 2% Class 4 NIC
-
-const US_STANDARD_DEDUCTION = 16100;
-const US_SS_WAGE_BASE = 184500;
-const US_SE_INCOME_FACTOR = 0.9235; // SE tax applies to 92.35% of net profit
-const US_SS_RATE = 0.124; // 12.4%, both shares of Social Security
-const US_MEDICARE_RATE = 0.029; // 2.9%, uncapped
-/** 2026 federal income tax brackets, single filer, on taxable income. */
-const US_BRACKETS: ReadonlyArray<{ upTo: number; rate: number }> = [
-  { upTo: 12100, rate: 0.1 },
-  { upTo: 49150, rate: 0.12 },
-  { upTo: 105225, rate: 0.22 },
-  { upTo: 200700, rate: 0.24 },
-  { upTo: 375000, rate: 0.32 },
-  { upTo: 530000, rate: 0.35 },
-  { upTo: Infinity, rate: 0.37 },
-];
-
 export function computeTaxBreakdown(
   grossRevenue: number,
   allowableDeductions: number,
   settings: TaxSettings
 ): TaxBreakdown {
   const taxableProfit = Math.max(0, grossRevenue - allowableDeductions);
+  let estimatedTax = 0;
 
-  // One estimate function for the active regime, so the "what you would have
-  // paid with no deductions" figure used for the tax-shield comparison is
-  // computed under the SAME regime as the actual figure. It previously applied
-  // UK personal-allowance and 26% basic-rate maths unconditionally, so under the
-  // US or flat regime the tax-shield number compared two different tax systems.
-  const estimateTaxFor = (profit: number): number => {
-    if (settings.regime === 'uk_sole_trader') {
-      // UK sole trader. The annual bands are applied on a monthly scale, which
-      // is exact because both bands are linear in profit.
-      const monthlyAllowance = UK_PERSONAL_ALLOWANCE / 12;
-      const monthlyBasicLimit = UK_BASIC_RATE_LIMIT / 12;
-      if (profit <= monthlyAllowance) return 0;
-      const taxable = profit - monthlyAllowance;
-      const basicBand = Math.min(taxable, monthlyBasicLimit - monthlyAllowance);
+  if (settings.regime === 'uk_sole_trader') {
+    // UK Sole Trader brackets (monthly scale):
+    // Personal allowance: £12,570/yr (£1,047.50/mo)
+    // Basic rate (20%) + Class 4 NIC (~6%) = 26% up to £50,270/yr (£4,189.17/mo)
+    // Higher rate (40%) + Class 4 NIC (2%) = 42%
+    const monthlyAllowance = 12570 / 12;
+    const monthlyHigher = 50270 / 12;
+    if (taxableProfit > monthlyAllowance) {
+      const taxable = taxableProfit - monthlyAllowance;
+      const basicBand = Math.min(taxable, monthlyHigher - monthlyAllowance);
       const higherBand = Math.max(0, taxable - basicBand);
-      return basicBand * UK_BASIC_RATE_COMBINED + higherBand * UK_HIGHER_RATE_COMBINED;
+      estimatedTax = (basicBand * 0.26) + (higherBand * 0.42);
     }
-    if (settings.regime === 'us_self_employed') {
-      // US self-employment tax plus federal income tax, single filer.
-      // Annualised, because the brackets and the Social Security wage base are
-      // annual amounts. The previous version used the 2024 standard deduction,
-      // charged a flat 12% with no 10% band and no higher brackets, and never
-      // capped Social Security at the wage base — so it overtaxed low profits
-      // and undertaxed high ones.
-      const annualProfit = profit * 12;
-      const seIncome = annualProfit * US_SE_INCOME_FACTOR;
-      const seTax =
-        Math.min(seIncome, US_SS_WAGE_BASE) * US_SS_RATE + seIncome * US_MEDICARE_RATE;
-
-      // Taxable income is net profit less the standard deduction and the
-      // deductible half of self-employment tax.
-      const taxableIncome = Math.max(0, annualProfit - US_STANDARD_DEDUCTION - seTax * 0.5);
-      let incomeTax = 0;
-      let lowerBound = 0;
-      for (const bracket of US_BRACKETS) {
-        if (taxableIncome <= lowerBound) break;
-        incomeTax += (Math.min(taxableIncome, bracket.upTo) - lowerBound) * bracket.rate;
-        lowerBound = bracket.upTo;
-      }
-      return (seTax + incomeTax) / 12;
+  } else if (settings.regime === 'us_self_employed') {
+    // US Self-Employed: SE tax (~15.3% on 92.35% = 14.1%) + federal bracket
+    const monthlyExemption = 14600 / 12;
+    if (taxableProfit > monthlyExemption) {
+      const taxable = taxableProfit - monthlyExemption;
+      estimatedTax = (taxableProfit * 0.1413) + (taxable * 0.12);
+    } else {
+      estimatedTax = taxableProfit * 0.1413;
     }
-    // Flat rate.
-    return profit * ((settings.flatRatePct || 25) / 100);
-  };
-
-  const estimatedTax = estimateTaxFor(taxableProfit);
+  } else {
+    // Flat rate
+    const rate = (settings.flatRatePct || 25) / 100;
+    estimatedTax = taxableProfit * rate;
+  }
 
   const takeHomeCash = Math.max(0, grossRevenue - allowableDeductions - estimatedTax);
   const effectiveTaxRatePct = taxableProfit > 0 ? (estimatedTax / taxableProfit) * 100 : 0;
-  const grossTaxEstimate = estimateTaxFor(grossRevenue);
+  const grossTaxEstimate = grossRevenue > (12570 / 12) ? (grossRevenue - (12570 / 12)) * 0.26 : 0;
   const taxShieldSavings = Math.max(0, grossTaxEstimate - estimatedTax);
 
   return {
@@ -764,11 +643,11 @@ export function computeSeasonalitySummary(
 }
 
 export const DEFAULT_STUDIO_CHAIRS: StudioChair[] = [
-  { id: 'chair-1', nameKey: 'chairName.seniorPiercer', model: 'booth', weeklyRent: 275, commissionPct: 40, monthlyRevenue: 5600 },
-  { id: 'chair-2', nameKey: 'chairName.bodyPiercer', model: 'booth', weeklyRent: 250, commissionPct: 40, monthlyRevenue: 4800 },
-  { id: 'chair-3', nameKey: 'chairName.residentArtist', model: 'comm', weeklyRent: 250, commissionPct: 50, monthlyRevenue: 5200 },
-  { id: 'chair-4', nameKey: 'chairName.juniorApprentice', model: 'comm', weeklyRent: 200, commissionPct: 55, monthlyRevenue: 3400 },
-  { id: 'chair-5', nameKey: 'chairName.guestFlex', model: 'booth', weeklyRent: 250, commissionPct: 40, monthlyRevenue: 3000 },
+  { id: 'chair-1', name: 'Station 1 (Senior Piercer)', model: 'booth', weeklyRent: 275, commissionPct: 40, monthlyRevenue: 5600 },
+  { id: 'chair-2', name: 'Station 2 (Body Piercer)', model: 'booth', weeklyRent: 250, commissionPct: 40, monthlyRevenue: 4800 },
+  { id: 'chair-3', name: 'Station 3 (Resident Artist)', model: 'comm', weeklyRent: 250, commissionPct: 50, monthlyRevenue: 5200 },
+  { id: 'chair-4', name: 'Station 4 (Junior / Apprentice)', model: 'comm', weeklyRent: 200, commissionPct: 55, monthlyRevenue: 3400 },
+  { id: 'chair-5', name: 'Station 5 (Guest / Flex Chair)', model: 'booth', weeklyRent: 250, commissionPct: 40, monthlyRevenue: 3000 },
 ];
 
 export function computeStudioFloorModel(
@@ -820,117 +699,51 @@ export function exportToCsv(
   studioFloor?: StudioFloorModel
 ): void {
   const lines: string[] = [];
-  // Plain fixed-point numbers: a formatted currency string would inject a
-  // thousands separator and split the field across CSV columns.
-  const num = (v: number) => v.toFixed(2);
-  const payerLabel = (p: PayerType) =>
-    p === 'artist'
-      ? t('inclusions.payerArtist')
-      : p === 'owner'
-        ? t('inclusions.payerOwner')
-        : t('inclusions.payerSplit');
-
-  lines.push(t('export.title'));
-  lines.push(t('export.generated', { date: new Date().toISOString() }));
+  lines.push('POLI INTERNATIONAL - BOOTH RENT VS COMMISSION CALCULATION EXPORT');
+  lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push('');
 
-  lines.push(t('export.sectionCore'));
-  lines.push([t('export.colMetric'), t('print.thBooth'), t('print.thCommission')].join(','));
-  lines.push([t('print.metricGrossMonthly'), num(model.grossMonthlyRevenue), num(model.grossMonthlyRevenue)].join(','));
-  lines.push([t('export.rowStudioFee'), num(model.booth.artist.rent), num(model.comm.artist.commission)].join(','));
-  lines.push(
-    [t('export.rowInclusionsTotal'), num(model.booth.artist.totalInclusions), num(model.comm.artist.totalInclusions)].join(',')
-  );
-  lines.push(
-    [t('print.metricArtistNetMonthly'), num(model.booth.artist.netIncomeMonthly), num(model.comm.artist.netIncomeMonthly)].join(',')
-  );
-  lines.push(
-    [t('print.metricArtistAnnualNet'), num(model.booth.artist.netIncomeAnnual), num(model.comm.artist.netIncomeAnnual)].join(',')
-  );
-  lines.push(
-    [t('export.rowArtistRetained'), `${model.booth.artist.retainedPct.toFixed(1)}%`, `${model.comm.artist.retainedPct.toFixed(1)}%`].join(',')
-  );
-  lines.push(
-    [t('print.metricOwnerNetMargin'), num(model.booth.owner.netIncomeMonthly), num(model.comm.owner.netIncomeMonthly)].join(',')
-  );
-  const breakEven = model.breakEvenMonthly !== null ? num(model.breakEvenMonthly) : t('print.notApplicable');
-  lines.push([t('print.paramBreakEvenRevenue'), breakEven, breakEven].join(','));
+  lines.push('--- CORE DEAL SUMMARY ---');
+  lines.push('Metric,Booth Rent Model,Commission Model');
+  lines.push(`Gross Monthly Revenue,${model.grossMonthlyRevenue.toFixed(2)},${model.grossMonthlyRevenue.toFixed(2)}`);
+  lines.push(`Studio Fee or Rent Monthly,${model.booth.artist.rent.toFixed(2)},${model.comm.artist.commission.toFixed(2)}`);
+  lines.push(`Inclusions and Supplies Total,${model.booth.artist.totalInclusions.toFixed(2)},${model.comm.artist.totalInclusions.toFixed(2)}`);
+  lines.push(`Artist Net Monthly Income,${model.booth.artist.netIncomeMonthly.toFixed(2)},${model.comm.artist.netIncomeMonthly.toFixed(2)}`);
+  lines.push(`Artist Net Annual Income,${model.booth.artist.netIncomeAnnual.toFixed(2)},${model.comm.artist.netIncomeAnnual.toFixed(2)}`);
+  lines.push(`Artist Retained Percentage,${model.booth.artist.retainedPct.toFixed(1)}%,${model.comm.artist.retainedPct.toFixed(1)}%`);
+  lines.push(`Owner Net Monthly Profit,${model.booth.owner.netIncomeMonthly.toFixed(2)},${model.comm.owner.netIncomeMonthly.toFixed(2)}`);
+  lines.push(`Break-Even Monthly Crossover,${model.breakEvenMonthly ? model.breakEvenMonthly.toFixed(2) : 'N/A'},${model.breakEvenMonthly ? model.breakEvenMonthly.toFixed(2) : 'N/A'}`);
   lines.push('');
 
-  lines.push(t('export.sectionInclusions'));
-  lines.push(
-    [t('export.colItem'), t('export.colCostOrRate'), t('export.colBoothPayer'), t('export.colCommPayer')].join(',')
-  );
+  lines.push('--- INCLUSIONS RESPONSIBILITY MATRIX ---');
+  lines.push('Item,Monthly Cost or Rate,Booth Payer,Commission Payer');
   for (const inc of inclusions) {
-    const costDesc = inc.isPercentage
-      ? `${inc.ratePct}%`
-      : inc.costType === 'per_procedure' || inc.isPerProcedure
-        ? `${(inc.costPerProcedure ?? inc.unitCost ?? 0).toFixed(2)}/${t('common.procedureAbbr')}`
-        : num(inc.monthlyCost);
-    // A user-typed name is stored verbatim; t() returns unknown keys unchanged,
-    // so the same expression resolves standard, kit and custom rows correctly.
-    const name = inc.customName || t(inc.nameKey);
-    lines.push(`"${name}",${costDesc},${payerLabel(inc.boothPayer)},${payerLabel(inc.commPayer)}`);
+    const costDesc = inc.isPercentage ? `${inc.ratePct}%` : `£${inc.monthlyCost.toFixed(2)}`;
+    const name = inc.isCustom ? (inc.customName || inc.id) : inc.id;
+    lines.push(`"${name}",${costDesc},${inc.boothPayer},${inc.commPayer}`);
   }
   lines.push('');
 
   if (seasonality) {
-    lines.push(t('export.sectionSeasonality'));
-    lines.push(
-      [
-        t('seasonality.colMonth'),
-        t('seasonality.colMultiplier'),
-        t('seasonality.colWeeksOff'),
-        t('seasonality.colGross'),
-        t('seasonality.colBoothNet'),
-        t('seasonality.colCommNet'),
-        t('seasonality.colRentAway'),
-      ].join(',')
-    );
-    for (const m of seasonality.months) {
-      lines.push(
-        [
-          t(m.monthKey),
-          `${m.multiplier}x`,
-          m.weeksOff,
-          num(m.grossRevenue),
-          num(m.boothArtistNet),
-          num(m.commArtistNet),
-          num(m.rentOwedWhileAway),
-        ].join(',')
-      );
+    lines.push('--- 12-MONTH SEASONALITY AND CASH FLOW ---');
+    lines.push('Month,Multiplier,Weeks Off,Gross Revenue,Booth Artist Net,Commission Artist Net,Rent Owed While Away');
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    for (let i = 0; i < seasonality.months.length; i++) {
+      const m = seasonality.months[i];
+      lines.push(`${monthNames[i]},${m.multiplier}x,${m.weeksOff},${m.grossRevenue.toFixed(2)},${m.boothArtistNet.toFixed(2)},${m.commArtistNet.toFixed(2)},${m.rentOwedWhileAway.toFixed(2)}`);
     }
     lines.push('');
   }
 
   if (studioFloor) {
-    lines.push(t('export.sectionStudio'));
-    lines.push(`${t('export.rowShopOverhead')},${num(studioFloor.shopFixedMonthlyOverhead)}`);
-    lines.push(`${t('export.rowOccupancyRate')},${studioFloor.occupancyRatePct.toFixed(1)}%`);
-    lines.push(`${t('studio.studioRevenueTotal')},${num(studioFloor.totalStudioRevenue)}`);
-    lines.push(`${t('studio.studioNetProfit')},${num(studioFloor.totalStudioNetProfit)}`);
-    // Separate the two-column summary above from the five-column station table,
-    // so the section has the same blank-line structure as every other one.
-    lines.push('');
-    lines.push(
-      [
-        t('export.colStation'),
-        t('studio.modelLabel'),
-        t('export.colWeeklyRent'),
-        t('multiDeal.commLabel'),
-        t('export.colMonthlyRevenue'),
-      ].join(',')
-    );
+    lines.push('--- STUDIO FLOOR CAPACITY PLANNER ---');
+    lines.push(`Shop Monthly Overhead,£${studioFloor.shopFixedMonthlyOverhead.toFixed(2)}`);
+    lines.push(`Occupancy Rate,${studioFloor.occupancyRatePct.toFixed(1)}%`);
+    lines.push(`Studio Total Revenue,£${studioFloor.totalStudioRevenue.toFixed(2)}`);
+    lines.push(`Studio Net Profit,£${studioFloor.totalStudioNetProfit.toFixed(2)}`);
+    lines.push('Station,Model,Weekly Rent,Commission %,Monthly Revenue');
     for (const c of studioFloor.chairs) {
-      const modelLabel =
-        c.model === 'booth'
-          ? t('studio.modelBooth')
-          : c.model === 'comm'
-            ? t('studio.modelComm')
-            : t('studio.modelVacant');
-      lines.push(
-        `"${resolveName(c.name, c.nameKey, c.nameParams)}",${modelLabel},${c.weeklyRent},${c.commissionPct}%,${num(c.monthlyRevenue)}`
-      );
+      lines.push(`"${c.name}",${c.model},£${c.weeklyRent},${c.commissionPct}%,£${c.monthlyRevenue.toFixed(2)}`);
     }
   }
 
@@ -955,9 +768,8 @@ export function exportToJson(
   const data = {
     metadata: {
       generatedAt: new Date().toISOString(),
-      tool: t('export.toolName'),
-      author: t('print.suiteEyebrow'),
-      language: getLanguage(),
+      tool: 'Booth Rent vs Commission Calculator V2',
+      author: 'Poli International Pro Suite',
     },
     deal,
     inclusions,
@@ -1013,10 +825,7 @@ export function decodeStateFromUrl(hashOverride?: string): any | null {
 
 export interface SavedDealPreset {
   id: string;
-  /** Name typed by the user. Wins over nameKey when present. */
-  name?: string;
-  /** Translation key for a seeded preset name. */
-  nameKey?: string;
+  name: string;
   createdAt: string;
   deal: DealParameters;
   realisticParams?: RealisticMonthParams;
@@ -1025,19 +834,19 @@ export interface SavedDealPreset {
 export const DEFAULT_PRESETS: SavedDealPreset[] = [
   {
     id: 'preset-standard-5050',
-    nameKey: 'presetName.standard5050',
+    name: 'Standard 50/50 Commission vs £250 Booth',
     createdAt: '2026-01-01',
     deal: { weeklyRent: 250, commissionPct: 50, weeksPerYear: 48, dealStructure: 'standard' },
   },
   {
     id: 'preset-city-centre',
-    nameKey: 'presetName.cityCentre',
+    name: 'Prime City Centre (£350/wk vs 60/40 Split)',
     createdAt: '2026-01-01',
     deal: { weeklyRent: 350, commissionPct: 40, weeksPerYear: 50, dealStructure: 'standard' },
   },
   {
     id: 'preset-hybrid-deal',
-    nameKey: 'presetName.hybrid',
+    name: 'Hybrid: Base £120/wk + 20% Studio Cut',
     createdAt: '2026-01-01',
     deal: {
       weeklyRent: 250,
@@ -1050,7 +859,7 @@ export const DEFAULT_PRESETS: SavedDealPreset[] = [
   },
   {
     id: 'preset-floor-guarantee',
-    nameKey: 'presetName.floorGuarantee',
+    name: '50% Commission with £220/wk Minimum Floor',
     createdAt: '2026-01-01',
     deal: {
       weeklyRent: 250,
@@ -1135,32 +944,12 @@ export function computeCompetingOfferResult(
 }
 
 
-/**
- * Money formatting for the active locale.
- *
- * No currency symbol is hardcoded: the symbol and its position come from
- * Intl with the locale's ISO 4217 code, so a French reader sees `1 234,56 €`
- * and a UK reader sees `£1,234.56`.
- */
-function formatMoney(value: number, fractionDigits: number, lang?: SupportedLanguage): string {
-  const locale = lang || getLanguage();
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: getCurrencyCode(locale),
-      minimumFractionDigits: fractionDigits,
-      maximumFractionDigits: fractionDigits,
-    }).format(value);
-  } catch {
-    // Fallback for engines without full Intl currency data.
-    return `${getCurrencySymbol(locale)}${value.toFixed(fractionDigits)}`;
-  }
+export function formatCurrency(n: number): string {
+  if (isNaN(n)) return '£0.00';
+  return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function formatCurrency(n: number, lang?: SupportedLanguage): string {
-  return formatMoney(isNaN(n) ? 0 : n, 2, lang);
-}
-
-export function formatWholeCurrency(n: number, lang?: SupportedLanguage): string {
-  return formatMoney(isNaN(n) ? 0 : Math.round(n), 0, lang);
+export function formatWholeCurrency(n: number): string {
+  if (isNaN(n)) return '£0';
+  return '£' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
