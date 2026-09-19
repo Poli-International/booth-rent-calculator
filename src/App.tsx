@@ -47,18 +47,11 @@ import {
 import {
   DEFAULT_INCLUSIONS,
   computeFullModel,
-  computeMonthlyProcedures,
   formatCurrency,
   formatWholeCurrency,
   decodeStateFromUrl,
 } from './utils/calculator';
-import {
-  t,
-  setLanguage,
-  languageNames,
-  SupportedLanguage,
-  supportedLanguages,
-} from './i18n/translations';
+import { t, getLanguage, setLanguage, SupportedLanguage, supportedLanguages } from './i18n/translations';
 
 import { BothSidesComparison } from './components/BothSidesComparison';
 import { BreakEvenChart } from './components/BreakEvenChart';
@@ -68,6 +61,7 @@ import { PrintableSummary } from './components/PrintableSummary';
 import { RelatedTools } from './components/RelatedTools';
 import { MultiDealComparison } from './components/MultiDealComparison';
 import { SeasonalityCashFlow } from './components/SeasonalityCashFlow';
+import { TaxOverlay } from './components/TaxOverlay';
 import { StudioFloorPlanner } from './components/StudioFloorPlanner';
 import { PresetAndShareBar } from './components/PresetAndShareBar';
 
@@ -182,15 +176,6 @@ export default function App() {
     return computeFullModel(deal, realisticParams, inclusions, taxSettings);
   }, [deal, realisticParams, inclusions, taxSettings]);
 
-  // Completed procedures per month. Drives per-procedure consumable pricing in
-  // the inclusions panel, the break-even curves and the printed summary, so it
-  // comes from one shared helper rather than being recomputed in three places
-  // that could drift apart.
-  const monthlyProcedures = useMemo(
-    () => computeMonthlyProcedures(realisticParams),
-    [realisticParams]
-  );
-
   const updateDeal = (key: keyof DealParameters, val: any) => {
     setDeal((prev) => ({ ...prev, [key]: val }));
   };
@@ -215,7 +200,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <div className="relative inline-block">
               <label htmlFor="language-select" className="sr-only">
-                {t('header.languageLabel')}
+                Language
               </label>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--text-main)] shadow-xs">
                 <Globe size={14} className="text-[var(--text-muted)]" />
@@ -225,11 +210,13 @@ export default function App() {
                   onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
                   className="bg-transparent border-0 text-xs font-medium cursor-pointer focus:outline-hidden text-[var(--text-main)]"
                 >
-                  {supportedLanguages.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {languageNames[lang]}
-                    </option>
-                  ))}
+                  <option value="en">English (EN)</option>
+                  <option value="fr">Français (FR)</option>
+                  <option value="de">Deutsch (DE)</option>
+                  <option value="it">Italiano (IT)</option>
+                  <option value="es">Español (ES)</option>
+                  <option value="nl">Nederlands (NL)</option>
+                  <option value="pt">Português (PT)</option>
                 </select>
               </div>
             </div>
@@ -274,7 +261,7 @@ export default function App() {
               role="alert"
             >
               <AlertTriangle size={15} className="shrink-0 text-[var(--warn-text)]" />
-              <span>{t(wKey)}</span>
+              <span>{t(wKey as any)}</span>
             </div>
           ))}
         </div>
@@ -306,7 +293,7 @@ export default function App() {
             <div className="text-xs text-[var(--text-muted)] flex items-center gap-1.5">
               <span>{t('dealInputs.breakEvenLabel')}:</span>
               <span className="font-mono font-bold text-[var(--c-neutral)] bg-[var(--bg-input)] px-2 py-0.5 rounded border border-[var(--border)]">
-                {formatWholeCurrency(model.breakEvenMonthly)} {t('common.perMonth')}
+                {formatWholeCurrency(model.breakEvenMonthly)} / mo
               </span>
             </div>
           ) : (
@@ -495,7 +482,7 @@ export default function App() {
           >
             <SlidersHorizontal size={13} />
             <span>
-              {showAdvancedSplit ? t('advanced.toggleHide') : t('advanced.toggleShow')}
+              {showAdvancedSplit ? 'Hide Advanced Commission Curves & Walk-Ins' : 'Configure Advanced Sliding-Scale & Walk-In Splits'}
             </span>
             {showAdvancedSplit ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
@@ -523,7 +510,7 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                     <div className="p-2 bg-[var(--bg-card)] border border-[var(--border)] rounded">
                       <span className="text-[11px] text-[var(--text-muted)] block">
-                        {t('tiered.tier1', { amount: '3,000' })}
+                        Tier 1 (Up to £3,000)
                       </span>
                       <div className="flex items-center gap-1 mt-1">
                         <input
@@ -538,13 +525,13 @@ export default function App() {
                           }}
                           className="w-16 px-1 py-0.5 text-xs bg-[var(--bg-app)] border border-[var(--border)] rounded font-semibold text-right"
                         />
-                        <span className="text-xs">{t('tiered.shopCutInline')}</span>
+                        <span className="text-xs">% shop cut</span>
                       </div>
                     </div>
 
                     <div className="p-2 bg-[var(--bg-card)] border border-[var(--border)] rounded">
                       <span className="text-[11px] text-[var(--text-muted)] block">
-                        {t('tiered.tier2', { from: '3,000', to: '6,000' })}
+                        Tier 2 (£3,000 - £6,000)
                       </span>
                       <div className="flex items-center gap-1 mt-1">
                         <input
@@ -559,13 +546,13 @@ export default function App() {
                           }}
                           className="w-16 px-1 py-0.5 text-xs bg-[var(--bg-app)] border border-[var(--border)] rounded font-semibold text-right"
                         />
-                        <span className="text-xs">{t('tiered.shopCutInline')}</span>
+                        <span className="text-xs">% shop cut</span>
                       </div>
                     </div>
 
                     <div className="p-2 bg-[var(--bg-card)] border border-[var(--border)] rounded">
                       <span className="text-[11px] text-[var(--text-muted)] block">
-                        {t('tiered.tier3', { from: '6,000' })}
+                        Tier 3 (Above £6,000)
                       </span>
                       <div className="flex items-center gap-1 mt-1">
                         <input
@@ -580,7 +567,7 @@ export default function App() {
                           }}
                           className="w-16 px-1 py-0.5 text-xs bg-[var(--bg-app)] border border-[var(--border)] rounded font-semibold text-right"
                         />
-                        <span className="text-xs">{t('tiered.shopCutInline')}</span>
+                        <span className="text-xs">% shop cut</span>
                       </div>
                     </div>
                   </div>
@@ -742,6 +729,19 @@ export default function App() {
 
         <button
           type="button"
+          onClick={() => setActiveTab('tax')}
+          className={`px-3 py-2 text-xs rounded-t-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap min-h-[44px] ${
+            activeTab === 'tax'
+              ? 'bg-[var(--bg-card)] text-[var(--primary)] border-t border-x border-[var(--border)] -mb-[1px]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-main)] bg-transparent'
+          }`}
+        >
+          <Landmark size={14} />
+          <span>{t('nav.tax')}</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('studio')}
           className={`px-3 py-2 text-xs rounded-t-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap min-h-[44px] ${
             activeTab === 'studio'
@@ -827,13 +827,27 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'tax' && (
+          <TaxOverlay
+            taxSettings={taxSettings}
+            onUpdateTaxSettings={setTaxSettings}
+            boothSide={model.booth}
+            commSide={model.comm}
+            grossRevenue={model.grossMonthlyRevenue}
+          />
+        )}
+
         {activeTab === 'studio' && <StudioFloorPlanner />}
 
         {activeTab === 'inclusions' && (
           <DealInclusions
             inclusions={inclusions}
             monthlyRevenue={model.grossMonthlyRevenue}
-            monthlyProcedures={monthlyProcedures}
+            monthlyProcedures={Math.round(
+              realisticParams.workingDaysPerMonth *
+                realisticParams.apptsPerDay *
+                (1 - realisticParams.noShowRatePct / 100)
+            )}
             onUpdateInclusions={setInclusions}
           />
         )}
@@ -844,7 +858,6 @@ export default function App() {
             inclusions={inclusions}
             breakEvenMonthly={model.breakEvenMonthly}
             currentMonthlyRevenue={model.grossMonthlyRevenue}
-            monthlyProcedures={monthlyProcedures}
           />
         )}
       </div>
@@ -869,7 +882,7 @@ export default function App() {
                 {t('snapshot.grossRevenue')}
               </span>
               <span className="font-mono font-bold text-sm text-[var(--text-main)]">
-                {formatCurrency(model.grossMonthlyRevenue)} {t('common.perMonth')}
+                {formatCurrency(model.grossMonthlyRevenue)} / mo
               </span>
             </div>
             <div className="p-2.5 rounded-lg bg-[var(--bg-input)] border border-[var(--border)]">
@@ -905,6 +918,66 @@ export default function App() {
       {/* RELATED TOOLS (Links only, do not build) */}
       <div className="related-tools-section print:hidden">
         <RelatedTools />
+      </div>
+
+      {/* PRO SUITE STANDARDS SECTION */}
+      <div className="pro-standards-note print:hidden" id="pro-suite-section">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 font-bold text-[var(--text-main)] text-xs">
+            <ShieldCheck size={16} className="text-[var(--primary)]" />
+            <span>{t('standards.title')}</span>
+          </div>
+
+          <button
+            type="button"
+            id="btn-toggle-clinical-matrices"
+            onClick={() => setShowStandardsModal(!showStandardsModal)}
+            className="text-xs font-semibold text-[var(--primary)] border border-[var(--border)] px-3 py-2 min-h-[44px] rounded hover:bg-[var(--bg-input)] cursor-pointer inline-flex items-center justify-center"
+          >
+            {showStandardsModal ? t('standards.toggleHide') : t('standards.toggleShow')}
+          </button>
+        </div>
+
+        <p className="text-xs text-[var(--text-muted)] m-0 leading-relaxed">
+          {t('standards.intro')}
+        </p>
+
+        {showStandardsModal && (
+          <div className="mt-3 pt-3 border-t border-[var(--border)]">
+            <div className="font-semibold text-xs text-[var(--text-main)] mb-2 flex items-center gap-1.5">
+              <Sparkles size={14} className="text-[var(--primary)]" />
+              <span>{t('standards.matricesTitle')}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
+                <div className="font-bold text-[var(--c-booth)] text-xs mb-1">
+                  ✓ {t('standards.matTitaniumTitle')}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] leading-normal">
+                  {t('standards.matTitaniumDesc')}
+                </div>
+              </div>
+
+              <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
+                <div className="font-bold text-[var(--c-comm)] text-xs mb-1">
+                  ✓ {t('standards.matSteelTitle')}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] leading-normal">
+                  {t('standards.matSteelDesc')}
+                </div>
+              </div>
+
+              <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
+                <div className="font-bold text-[var(--c-neutral)] text-xs mb-1">
+                  ✓ {t('standards.matGaugesTitle')}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] leading-normal">
+                  {t('standards.matGaugesDesc')}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* FOOTER */}
