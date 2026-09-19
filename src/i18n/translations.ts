@@ -1,103 +1,539 @@
 /**
- * i18n engine for Booth Rent vs Commission Calculator V2.
- *
- * `src/i18n/locales/en.ts` is the single canonical dictionary. Every other
- * locale must define exactly the same key set — `scripts/check-i18n.mjs`
- * enforces key parity, placeholder parity, currency-symbol hygiene and the
- * banned-claim list at build time.
- *
- * Currency is never written literally inside a dictionary value. Values use the
- * `{cur}` token, which `t()` substitutes with the symbol for the active locale,
- * so a translated string can never disagree with the numbers beside it.
+ * i18n Translation Engine for Booth Rent vs Commission Calculator V2
+ * English reference dictionary with parameter interpolation.
+ * All keys are strictly grouped into namespaces describing where they appear.
  */
 
-import { en } from './locales/en';
 import { fr } from './locales/fr';
-import { it } from './locales/it';
 import { de } from './locales/de';
+import { it } from './locales/it';
 import { es } from './locales/es';
 import { nl } from './locales/nl';
 import { pt } from './locales/pt';
 
-/** Canonical English dictionary; also the runtime fallback for any missing key. */
-export const translations: Record<string, string> = en;
+export const translations: Record<string, string> = {
+  // ── HEADER NAMESPACE (src/App.tsx) ───────────────────────────
+  'header.badgeCategory': 'Studio Economics V2',
+  'header.printBtn': 'Print Calculation Summary',
+  'header.printBtnShort': 'Print',
+  'header.themeToggleAria': 'Toggle light/dark theme',
+  'header.themeLight': 'Light Mode',
+  'header.themeDark': 'Dark Mode',
+  'header.title': 'Booth Rent vs Commission Calculator',
+  'header.subtitle': 'Calculate the objective arithmetic of booth rent against commission from both sides of the table—for independent artists and studio owners.',
 
-/** All shipped dictionaries, keyed by language code. */
-export const locales: Record<string, Record<string, string>> = { en, fr, it, de, es, nl, pt };
+  // ── NAVIGATION NAMESPACE (src/App.tsx) ───────────────────────
+  'nav.overview': 'Deal Comparison',
+  'nav.multi': 'Multi-Offer Matrix',
+  'nav.realistic': 'Realistic Simulation',
+  'nav.seasonality': 'Annual Cash Flow',
+  'nav.tax': 'Tax & Take-Home',
+  'nav.studio': 'Studio Floor Plan',
+  'nav.inclusions': 'Consumables & Supplies',
+  'nav.breakEven': 'Break-Even Curve',
+  'nav.print': 'Printable Sheet',
 
-export const supportedLanguages = ['en', 'fr', 'it', 'de', 'es', 'nl', 'pt'] as const;
+  // ── DEAL INPUTS NAMESPACE (src/App.tsx) ──────────────────────
+  'dealInputs.title': 'Deal Parameters',
+  'dealInputs.subtitleNote': '(Common contract baseline)',
+  'dealInputs.breakEvenLabel': 'Break-Even Monthly Revenue',
+  'dealInputs.breakEvenUndefined': 'Break-even is not reachable with current 0% commission rate.',
+  'dealInputs.weeklyRent': 'Booth Rent (£ / week)',
+  'dealInputs.weeklyRentHint': 'Fixed rental rate charged per week',
+  'dealInputs.weeklyRentCalculated': '= ~{amount} / month',
+  'dealInputs.commissionPct': 'Studio Commission (%)',
+  'dealInputs.commissionPctHint': 'Percentage of gross service revenue paid to studio',
+  'dealInputs.commissionRetained': 'Artist retains {pct}% before expenses',
+  'dealInputs.weeksPerYear': 'Working Weeks per Year',
+  'dealInputs.weeksPerYearHint': 'Typical full-time standard is 48 to 50 weeks',
+
+  // ── COMPARISON NAMESPACE (src/components/BothSidesComparison.tsx) ──
+  'comparison.secTitle': 'Both Sides of the Same Deal',
+  'comparison.secDesc': 'Examining the exact same client revenue stream simultaneously from the artist\'s and owner\'s perspective.',
+  'comparison.artistTitle': 'Artist Perspective',
+  'comparison.artistSubtitle': 'Independent Artist Take-Home',
+  'comparison.ownerTitle': 'Studio Owner Perspective',
+  'comparison.ownerSubtitle': 'Studio Operating Revenue & Margin',
+  'comparison.boothModel': 'Booth Rent Model',
+  'comparison.commModel': 'Commission Model',
+  'comparison.rentPaid': 'Rent Paid:',
+  'comparison.inclusions': 'Inclusions:',
+  'comparison.netTakeHome': 'Net Take-Home',
+  'comparison.retainedPct': '{pct}% of gross revenue',
+  'comparison.commissionPaid': 'Commission:',
+  'comparison.atCurrentVolume': 'At current volume:',
+  'comparison.artistBoothWins': 'Booth leaves +{amount}/mo with artist',
+  'comparison.artistCommWins': 'Commission leaves +{amount}/mo with artist',
+  'comparison.artistEqual': 'Both models leave equal net with artist',
+  'comparison.rentCollected': 'Rent Collected:',
+  'comparison.overheadCovered': 'Overhead Covered:',
+  'comparison.studioMargin': 'Studio Margin',
+  'comparison.studioMarginPct': '{pct}% of client gross',
+  'comparison.commissionRecv': 'Commission Recv:',
+  'comparison.ownerBoothWins': 'Booth leaves +{amount}/mo with studio',
+  'comparison.ownerCommWins': 'Commission leaves +{amount}/mo with studio',
+  'comparison.ownerEqual': 'Both models leave equal margin with studio',
+
+  // ── BREAK-EVEN NAMESPACE (src/components/BreakEvenChart.tsx) ─
+  'breakEven.secTitle': 'Break-Even Analysis',
+  'breakEven.secDesc': 'The monthly client revenue threshold where both models yield the exact same cost.',
+  'breakEven.explanation': 'At {rev} per month ({weeklyRev} per week), both booth rent and commission produce the exact same net earnings for the artist and the owner.',
+  'breakEven.undefined': 'Break-even is not reachable with current 0% commission rate.',
+  'breakEven.monthlyLabel': 'Break-Even Monthly Revenue',
+  'breakEven.weeklyLabel': 'Break-Even Weekly Revenue',
+  'breakEven.aboveBreakEven': 'Above this revenue, Booth Rent leaves more money with the artist.',
+  'breakEven.belowBreakEven': 'Below this revenue, Commission leaves more money with the artist.',
+  'breakEven.ariaLabel': 'Break-even crossover chart comparing booth rent and commission net income',
+  'breakEven.xAxisLabel': 'Monthly Gross Client Revenue (£)',
+  'breakEven.yAxisLabel': 'Monthly Net Income (£)',
+  'breakEven.calloutText': 'Break-Even: {amount}',
+  'breakEven.currentMarkerText': 'Current ({amount})',
+  'breakEven.legendArtistBooth': 'Artist (Booth) [◆ Solid]',
+  'breakEven.legendArtistComm': 'Artist (Comm) [● Dashed]',
+  'breakEven.legendOwnerBooth': 'Owner (Booth) [⋯ Dotted]',
+  'breakEven.legendOwnerComm': 'Owner (Comm) [—· Dash-Dot]',
+
+  // ── INCLUSIONS NAMESPACE (src/components/DealInclusions.tsx & src/utils/calculator.ts) ──
+  'inclusions.secTitle': 'Included Operating Expenses',
+  'inclusions.secDesc': 'Rent and commission figures mean nothing without knowing who pays for supplies, sterilization, card fees, and utilities.',
+  'inclusions.supplies': 'Clinical Consumables & Supplies',
+  'inclusions.suppliesHint': 'Gloves, needles, barriers, ink, prep solutions, skin cleansers',
+  'inclusions.laundry': 'Laundry, Sterilisation & Waste',
+  'inclusions.laundryHint': 'Autoclave pouches, biological indicators, sharps disposal, linen',
+  'inclusions.cardFees': 'Card Processing Fees',
+  'inclusions.cardFeesHint': 'Payment terminal rate (typically 1.5% - 2.0% of revenue)',
+  'inclusions.utilities': 'Utilities, Licences & Facilities',
+  'inclusions.utilitiesHint': 'Council licensing, power, water, high-speed Wi-Fi, cleaning',
+  'inclusions.rateLabel': 'Rate:',
+  'inclusions.estCostLabel': 'Est: £',
+  'inclusions.approxMonthlyCost': '(~{amount}/mo)',
+  'inclusions.inBoothRent': 'In Booth Rent:',
+  'inclusions.inCommission': 'In Commission:',
+  'inclusions.btnArtist': 'Artist',
+  'inclusions.btnOwner': 'Owner',
+  'inclusions.btnSplit': '50/50',
+  'inclusions.payerArtist': 'Artist Pays 100%',
+  'inclusions.payerOwner': 'Owner Pays 100%',
+  'inclusions.payerSplit': '50 / 50 Split',
+  'inclusions.monthlyCostEstimate': 'Monthly Cost (£)',
+
+  // ── REALISTIC SPREAD NAMESPACE (src/components/RealisticMonthSpread.tsx & src/utils/calculator.ts) ──
+  'realistic.secTitle': 'Realistic Month Simulation',
+  'realistic.secDesc': 'Revenue is rarely a steady best-case. Factoring in booked appointments, working schedule, and client no-show rate.',
+  'realistic.btnSchedule': 'Schedule Model',
+  'realistic.btnDirect': 'Direct Revenue',
+  'realistic.workingDays': 'Working Days per Month',
+  'realistic.workingDaysHint': 'e.g. 4 days/wk × 4.33 wks = ~17 to 20 days',
+  'realistic.apptsPerDay': 'Client Appointments / Day',
+  'realistic.apptsPerDayHint': 'Average booked clients or piercings/tattoos per day',
+  'realistic.avgTicket': 'Average Ticket Value (£)',
+  'realistic.avgTicketHint': 'Average spend per client appointment',
+  'realistic.noShowRate': 'No-Show & Cancellation Rate (%)',
+  'realistic.noShowHint': 'Unfilled cancellations or client no-shows',
+  'realistic.directRevenue': 'Direct Monthly Revenue (£)',
+  'realistic.spreadConservative': 'Conservative / Slow Month',
+  'realistic.spreadConservativeDesc': 'High cancellation (+10%), lower volume (-15%)',
+  'realistic.spreadExpected': 'Realistic / Expected Month',
+  'realistic.spreadExpectedDesc': 'Baseline scheduled days and standard no-shows',
+  'realistic.spreadPeak': 'Peak / Busy Month',
+  'realistic.spreadPeakDesc': 'Near-zero cancellations, maximum client demand (+20%)',
+  'realistic.baselineBadge': 'Baseline',
+  'realistic.estCompletedClients': 'Est. Completed Clients:',
+  'realistic.apptsCount': '{count} appts',
+  'realistic.grossClientRevenue': 'Gross Client Revenue:',
+  'realistic.artistNetTakeHome': 'Artist Net Take-Home',
+  'realistic.boothRentLabel': 'Booth Rent:',
+  'realistic.commissionLabel': 'Commission:',
+  'realistic.ownerNetMargin': 'Studio Owner Net Margin',
+  'realistic.boothModelLabel': 'Booth Model:',
+  'realistic.commissionOwnerLabel': 'Commission:',
+  'realistic.modelSpread': 'Model Spread:',
+  'realistic.boothDelta': 'Booth +{amount}/mo',
+  'realistic.commDelta': 'Comm +{amount}/mo',
+  'realistic.bookedAppts': 'Booked Appointments',
+  'realistic.completedAppts': 'Completed Appointments',
+  'realistic.expectedMonthlyRev': 'Expected Monthly Revenue',
+  'realistic.expectedWeeklyRev': 'Expected Weekly Revenue',
+
+  // ── PRINTABLE SHEET NAMESPACE (src/components/PrintableSummary.tsx) ──
+  'print.printBtn': 'Print or Save to PDF',
+  'print.pageHint': '(Optimised for 1-page standard A4 / US Letter)',
+  'print.closeBtn': 'Close Summary',
+  'print.suiteEyebrow': 'Poli International Studio Economics Suite',
+  'print.title': 'Booth Rent vs Commission Calculation Summary',
+  'print.subtitle': 'Objective mathematical projection for independent artist and studio owner review',
+  'print.generatedOn': 'Calculation generated on {date}',
+  'print.disclaimerHeading': 'IMPORTANT NOTICE & DISCLAIMER:',
+  'print.disclaimerText': 'NOTICE & DISCLAIMER: This document is a mathematical calculation summary generated for objective review and financial projection only. It does NOT constitute a legal contract, tenancy agreement, employment arrangement, or binding business partnership. Rules governing employment classification, booth leasing, and tax obligations differ by jurisdiction. Neither Poli International nor this tool provides legal or tax advice. Parties must consult qualified professional legal and accounting counsel.',
+  'print.paramWeeklyRent': 'Weekly Booth Rent',
+  'print.paramCommSplit': 'Commission Split',
+  'print.paramSplitToStudio': '{pct}% to Studio',
+  'print.paramWorkingWeeks': 'Working Weeks',
+  'print.paramWeeksPerYear': '{weeks} wks / yr',
+  'print.paramBreakEvenRevenue': 'Break-Even Revenue',
+  'print.notApplicable': 'N/A',
+  'print.sec1Heading': '1. Side-by-Side Deal Comparison (Expected Monthly Baseline)',
+  'print.thMetric': 'Financial Metric',
+  'print.thBooth': 'Booth Rent Model',
+  'print.thCommission': 'Commission Model',
+  'print.thDifference': 'Difference (Delta)',
+  'print.metricGrossMonthly': 'Gross Monthly Client Revenue',
+  'print.metricArtistNetMonthly': 'Artist: Net Monthly Take-Home',
+  'print.deltaBoothWins': 'Booth +{amount}',
+  'print.deltaCommWins': 'Comm +{amount}',
+  'print.metricArtistAnnualNet': 'Artist: Annual Projected Net',
+  'print.metricOwnerNetMargin': 'Studio Owner: Net Monthly Margin',
+  'print.metricOwnerAnnualMargin': 'Studio Owner: Annual Projected Margin',
+  'print.sec2Heading': '2. Explicit Deal Inclusions & Cost Allocation',
+  'print.thExpenseCategory': 'Expense Category',
+  'print.thEstimatedCost': 'Estimated Cost',
+  'print.thInBoothModel': 'In Booth Model',
+  'print.thInCommissionModel': 'In Commission Model',
+  'print.ratePctOfGross': '{rate}% of gross',
+  'print.sec3Heading': '3. Realistic Month Volume Spread',
+  'print.colConservative': 'Conservative (Slow)',
+  'print.colExpected': 'Expected (Baseline)',
+  'print.colPeak': 'Peak (Busy)',
+  'print.rowGrossRev': 'Gross Rev:',
+  'print.rowArtistBooth': 'Artist (Booth):',
+  'print.rowArtistComm': 'Artist (Comm):',
+  'print.rowOwnerBooth': 'Owner (Booth):',
+  'print.rowOwnerComm': 'Owner (Comm):',
+  'print.signStatement': 'I acknowledge that I have reviewed the mathematical calculations and deal inclusions outlined above. I understand this document is purely an arithmetic projection and not a legal contract.',
+  'print.signArtistTitle': 'Independent Artist Review & Acknowledgement',
+  'print.signOwnerTitle': 'Studio Owner / Representative Review & Acknowledgement',
+  'print.nameLabel': 'Printed Name:',
+  'print.signatureLabel': 'Signature:',
+  'print.dateLabel': 'Date:',
+
+  // ── SNAPSHOT NAMESPACE (src/App.tsx) ─────────────────────────
+  'snapshot.grossRevenue': 'Gross Revenue',
+  'snapshot.artistNetBooth': 'Artist Net (Booth)',
+  'snapshot.artistNetComm': 'Artist Net (Comm)',
+  'snapshot.generateSheetBtn': 'Generate Printable Sheet',
+
+  // ── STANDARDS NAMESPACE (src/App.tsx) ────────────────────────
+  'standards.title': 'Poli International Pro Suite & Professional Body Piercing Standards',
+  'standards.toggleHide': 'Hide Clinical Matrices',
+  'standards.toggleShow': 'View Clinical & Material Matrices',
+  'standards.intro': 'Designed for independent artists, tattooists, body piercing studios, and Qualified Professional Piercers. When budgeting overhead and consumable matrices, verify that all studio autoclaves, needles, and body jewellery comply with Professional Body Piercing Standards.',
+  'standards.matricesTitle': 'Clinical & Material Matrices (Global Benchmarks)',
+  'standards.matTitaniumTitle': 'ASTM F-136 Titanium',
+  'standards.matTitaniumDesc': 'Ti-6Al-4V ELI medical/implant grade. High biocompatibility, corrosion resistant, and compliant with Professional Body Piercing Standards.',
+  'standards.matSteelTitle': 'ASTM F-138 Stainless Steel',
+  'standards.matSteelDesc': 'Implant-grade 316LVM surgical stainless steel vacuum melted for clinical safety and low nickel leaching.',
+  'standards.matGaugesTitle': 'Wire Gauge & Tolerances',
+  'standards.matGaugesDesc': 'Standardised AWG/metric matrices with internal threading or threadless press-fit geometries for Qualified Professional Piercers.',
+
+  // ── RELATED TOOLS NAMESPACE (src/components/RelatedTools.tsx) ─
+  'relatedTools.title': 'Related Studio Economics Tools',
+  'relatedTools.linkBenchmark': 'Studio Pricing Benchmark Tool',
+  'relatedTools.linkBenchmarkDesc': 'Compare studio station rates and hourly pricing across regions.',
+  'relatedTools.linkTax': 'Tax & Deduction Tracker',
+  'relatedTools.linkTaxDesc': 'Calculate allowable business expenses, VAT, and self-employment tax deductions.',
+  'relatedTools.linkRoi': 'Equipment ROI Calculator',
+  'relatedTools.linkRoiDesc': 'Calculate payback periods and capital expenditure returns on autoclaves and laser equipment.',
+  'relatedTools.openToolLink': 'Open tool →',
+
+  // ── WARNINGS NAMESPACE (src/utils/calculator.ts) ─────────────
+  'warnings.errRevenuePositive': 'Revenue must be a positive number greater than zero.',
+  'warnings.warnRentExceedsRev': 'Fixed booth rent exceeds monthly client revenue in this scenario.',
+  'warnings.warnComm100': 'Commission is set at 100%. Review this arrangement.',
+  'warnings.warnHighNoShow': 'No-show rate is set higher than 35%. Verify appointment booking structure.',
+  'warnings.warnHighRevenue': 'Revenue is exceptionally high for a single artist station. Verify figures.',
+
+  // ── FOOTER NAMESPACE (src/App.tsx) ───────────────────────────
+  'footer.credit': 'Poli International Pro Suite Tools • Booth Rent vs Commission V2 • Studio Economics Engine',
+
+  // ── COMMON & UNITS NAMESPACE ─────────────────────────────────
+  'common.perMonth': '/ month',
+  'common.perWeek': '/ week',
+  'common.perYear': '/ year',
+  'common.monthAbbr': 'mo',
+  'common.weekAbbr': 'wk',
+  'common.save': 'Save',
+  'common.cancel': 'Cancel',
+  'common.delete': 'Delete',
+  'common.reset': 'Reset',
+  'common.copied': 'Copied to clipboard!',
+  'common.exportCsv': 'Export CSV',
+  'common.exportJson': 'Export JSON',
+  'common.shareLink': 'Share Deal Link',
+  'common.presets': 'Saved Presets',
+
+  // ── MULTI-DEAL COMPARISON NAMESPACE (Improvement 1) ───────────
+  'multiDeal.title': 'Multi-Offer Comparison Matrix',
+  'multiDeal.subtitle': 'Evaluate up to 3 competing studio contracts side by side with full deduction breakdown.',
+  'multiDeal.addOffer': 'Add Competing Offer',
+  'multiDeal.offerName': 'Offer Name',
+  'multiDeal.offerType': 'Contract Type',
+  'multiDeal.typeBooth': 'Booth Rent',
+  'multiDeal.typeComm': 'Commission Split',
+  'multiDeal.typeHybrid': 'Hybrid (Rent + Cut)',
+  'multiDeal.rentLabel': 'Weekly Rent (£)',
+  'multiDeal.commLabel': 'Commission Cut (%)',
+  'multiDeal.hybridBaseRent': 'Base Weekly Rent (£)',
+  'multiDeal.hybridCommPct': 'Commission Cut (%)',
+  'multiDeal.thOffer': 'Contract Offer',
+  'multiDeal.thGross': 'Gross Monthly',
+  'multiDeal.thDeductions': 'Total Deductions',
+  'multiDeal.thArtistNet': 'Artist Net Monthly',
+  'multiDeal.thRetained': 'Retained %',
+  'multiDeal.thOwnerNet': 'Studio Owner Margin',
+  'multiDeal.thDelta': 'Diff vs Baseline',
+  'multiDeal.bestForArtist': 'Top Artist Take-Home',
+  'multiDeal.bestForOwner': 'Top Studio Margin',
+  'multiDeal.baselineBadge': 'Baseline Offer',
+
+  // ── TIERED COMMISSION NAMESPACE (Improvement 2) ───────────────
+  'tiered.toggleTitle': 'Tiered / Sliding-Scale Commission',
+  'tiered.toggleDesc': 'Apply progressive commission splits based on gross monthly revenue brackets.',
+  'tiered.enableBtn': 'Enable Sliding-Scale Curves',
+  'tiered.tierHeader': 'Revenue Tier Brackets',
+  'tiered.tier1': 'Tier 1 (Up to £{amount})',
+  'tiered.tier2': 'Tier 2 (£{from} to £{to})',
+  'tiered.tier3': 'Tier 3 (Above £{from})',
+  'tiered.cutPct': 'Studio Cut (%)',
+  'tiered.effectiveRate': 'Blended Effective Rate: {rate}% to studio',
+
+  // ── PRESETS & STATE SHARING NAMESPACE (Improvement 3) ─────────
+  'presets.title': 'Saved Presets & Link Sharing',
+  'presets.saveCurrent': 'Save Current Deal',
+  'presets.presetNamePlaceholder': 'e.g. City Centre Offer, High Season Deal',
+  'presets.savedListTitle': 'Saved Presets Library',
+  'presets.emptyList': 'No custom presets saved yet.',
+  'presets.loadBtn': 'Load',
+  'presets.deleteBtn': 'Delete',
+  'presets.shareSuccess': 'Direct URL link copied to clipboard! Anyone with this link can view this exact deal.',
+
+  // ── CUSTOM LINE-ITEM SUPPLIES NAMESPACE (Improvement 4) ───────
+  'customSupplies.title': 'Custom Consumables & Line-Item Builder',
+  'customSupplies.subtitle': 'Add specific clinical supplies, disposables, or equipment consumables.',
+  'customSupplies.addItem': 'Add Custom Line Item',
+  'customSupplies.loadStandardKit': 'Load Standard Body Piercing Consumables Kit',
+  'customSupplies.nameLabel': 'Item / Consumable Name',
+  'customSupplies.costType': 'Cost Type',
+  'customSupplies.fixedMonthly': 'Fixed Monthly (£)',
+  'customSupplies.perProcedure': 'Per-Procedure Unit (£)',
+  'customSupplies.monthlyCost': 'Monthly Amount (£)',
+  'customSupplies.unitCost': 'Cost per Client / Procedure (£)',
+  'customSupplies.boothPayer': 'Paid in Booth Rent',
+  'customSupplies.commPayer': 'Paid in Commission',
+  'customSupplies.totalCustomLabel': 'Custom Consumables Subtotal:',
+  'customSupplies.kitLoadedToast': 'Standard clinical consumables kit loaded successfully.',
+
+  // ── SEASONALITY & CASH FLOW NAMESPACE (Improvement 5) ─────────
+  'seasonality.title': 'Annual Seasonality & Time-Off Simulator',
+  'seasonality.subtitle': 'Project 52-week annual cash flow, holiday downtime, and mandatory booth rent obligations while away.',
+  'seasonality.jan': 'January',
+  'seasonality.feb': 'February',
+  'seasonality.mar': 'March',
+  'seasonality.apr': 'April',
+  'seasonality.may': 'May',
+  'seasonality.jun': 'June',
+  'seasonality.jul': 'July',
+  'seasonality.aug': 'August',
+  'seasonality.sep': 'September',
+  'seasonality.oct': 'October',
+  'seasonality.nov': 'November',
+  'seasonality.dec': 'December',
+  'seasonality.annualGross': 'Projected Annual Gross Revenue',
+  'seasonality.annualBoothNet': 'Annual Artist Net (Booth)',
+  'seasonality.annualCommNet': 'Annual Artist Net (Commission)',
+  'seasonality.totalWeeksOff': 'Planned Weeks Off per Year',
+  'seasonality.rentWhileAway': 'Rent Accrued During Time Off',
+  'seasonality.rentWhileAwayAlert': 'Critical Cash-Flow Fact: Under booth rent, weekly rent remains 100% payable while on holiday or sick leave. You will owe £{amount} in rent while earning £0.',
+  'seasonality.recommendedBuffer': 'Recommended Emergency Cash Cushion',
+  'seasonality.recommendedBufferDesc': 'Includes 2 months of fixed booth rent plus planned vacation rent and baseline consumables.',
+  'seasonality.colMonth': 'Month',
+  'seasonality.colMultiplier': 'Demand Index',
+  'seasonality.colWeeksOff': 'Weeks Off',
+  'seasonality.colGross': 'Gross Rev',
+  'seasonality.colBoothNet': 'Booth Net',
+  'seasonality.colCommNet': 'Comm Net',
+  'seasonality.colRentAway': 'Rent While Away',
+
+  // ── TAX & SELF-EMPLOYMENT OVERLAY NAMESPACE (Improvement 6) ───
+  'tax.title': 'Tax & Self-Employment Net Take-Home Overlay',
+  'tax.subtitle': 'Calculate real spendable income in your pocket after allowable deductions, Income Tax, and Self-Employment contributions.',
+  'tax.enable': 'Enable Estimated Tax Overlay',
+  'tax.regimeLabel': 'Tax Jurisdiction / System',
+  'tax.regimeUk': 'UK Self-Employed Sole Trader (HMRC 2026/27)',
+  'tax.regimeUs': 'US Independent Contractor / Self-Employed (1099)',
+  'tax.regimeFlat': 'Custom Flat Income Tax Rate (%)',
+  'tax.flatRatePct': 'Flat Tax Percentage (%)',
+  'tax.gross': 'Gross Revenue',
+  'tax.allowable': 'Allowable Business Deductions',
+  'tax.allowableHint': 'Booth rent, supplies, card fees, laundry, and utility contributions are 100% tax-deductible against self-employment income.',
+  'tax.taxableProfit': 'Net Taxable Business Profit',
+  'tax.estTax': 'Estimated Tax & NI / SE Liability',
+  'tax.takeHome': 'Actual Spendable Cash in Pocket',
+  'tax.effectiveRate': 'Effective Tax Rate: {rate}%',
+  'tax.shieldBenefit': 'Tax-Shielding Impact of Booth Rent: Deducting fixed booth rent lowers your taxable profit by £{amount}/year compared to commission arrangements.',
+
+  // ── MULTI-CHAIR STUDIO CAPACITY PLANNER (Improvement 7) ───────
+  'studio.title': 'Studio Floor & Capacity Planner (Owner Perspective)',
+  'studio.subtitle': 'Model your entire studio station roster, fixed commercial overhead, and financial occupancy break-even.',
+  'studio.addChair': 'Add Station / Chair',
+  'studio.overheadTitle': 'Studio Fixed Monthly Overhead',
+  'studio.overheadHint': 'Commercial lease rent, business rates, commercial insurance, receptionist/front desk salary, software licenses, waste contracts.',
+  'studio.monthlyOverhead': 'Total Monthly Overhead (£)',
+  'studio.stationName': 'Station Name',
+  'studio.modelLabel': 'Contract Model',
+  'studio.modelBooth': 'Booth Rent',
+  'studio.modelComm': 'Commission Split',
+  'studio.modelVacant': 'Vacant / Unfilled',
+  'studio.stationGrossRev': 'Station Monthly Gross (£)',
+  'studio.studioRevenueTotal': 'Studio Monthly Gross Revenue',
+  'studio.studioNetProfit': 'Studio Net Monthly Profit',
+  'studio.occupancyRate': 'Station Occupancy Rate: {pct}%',
+  'studio.breakEvenChairs': 'Break-Even Occupancy: {count} active stations required to cover shop overhead',
+  'studio.emptyChairCost': 'Cost of 1 Vacant Chair: ~£{amount}/month in lost studio contribution',
+
+  // ── WALK-IN VS CUSTOM BOOKING REVENUE SPLIT (Improvement 8) ───
+  'walkIn.title': 'Walk-In vs. Custom Client Split',
+  'walkIn.subtitle': 'Differentiate shop-provided foot-traffic from artist-generated appointments.',
+  'walkIn.enable': 'Enable Split Walk-in / Custom Booking Rates',
+  'walkIn.pctShare': 'Walk-In Share of Total Appointments (%)',
+  'walkIn.shopSplit': 'Shop Cut on Walk-In Clients (%)',
+  'walkIn.customSplit': 'Shop Cut on Artist Direct Bookings (%)',
+  'walkIn.blendedLabel': 'Blended Commission: {rate}% average cut',
+
+  // ── HYBRID & FLOOR GUARANTEE ENGINE (Improvement 10) ──────────
+  'hybrid.structureLabel': 'Deal Contract Architecture',
+  'hybrid.standard': 'Standard Comparison (Flat Rent vs Flat Commission)',
+  'hybrid.hybrid': 'Hybrid Model (Base Weekly Rent + Reduced Commission Cut)',
+  'hybrid.floor': 'Minimum Guarantee (Commission with Studio Floor Floor)',
+  'hybrid.baseRent': 'Base Weekly Rent (£)',
+  'hybrid.baseRentHint': 'Guaranteed weekly floor rent paid to studio',
+  'hybrid.commCut': 'Reduced Commission Cut (%)',
+  'hybrid.commCutHint': 'Lower commission percentage applied to client gross on top of base rent',
+  'hybrid.floorMinWeekly': 'Studio Minimum Weekly Floor (£)',
+  'hybrid.floorMinHint': 'Studio receives commission, or this minimum floor weekly amount, whichever is higher',
+  'hybrid.floorCalculated': 'Studio is guaranteed at least £{amount}/month even during slow periods.',
+};
+
+// Aliases for backward compatibility
+translations['appTitle'] = translations['header.title'];
+translations['appSubtitle'] = translations['header.subtitle'];
+translations['badgeCategory'] = translations['header.badgeCategory'];
+translations['themeLight'] = translations['header.themeLight'];
+translations['themeDark'] = translations['header.themeDark'];
+
+translations['printBtn'] = translations['header.printBtn'];
+translations['tabOverview'] = translations['nav.overview'];
+translations['tabRealistic'] = translations['nav.realistic'];
+translations['tabInclusions'] = translations['nav.inclusions'];
+translations['tabBreakEven'] = translations['nav.breakEven'];
+translations['tabPrint'] = translations['nav.print'];
+translations['secBothSides'] = translations['comparison.secTitle'];
+translations['secBothSidesDesc'] = translations['comparison.secDesc'];
+translations['secRealistic'] = translations['realistic.secTitle'];
+translations['secRealisticDesc'] = translations['realistic.secDesc'];
+translations['secInclusions'] = translations['inclusions.secTitle'];
+translations['secInclusionsDesc'] = translations['inclusions.secDesc'];
+translations['secBreakEven'] = translations['breakEven.secTitle'];
+translations['secBreakEvenDesc'] = translations['breakEven.secDesc'];
+translations['dealInputsTitle'] = translations['dealInputs.title'];
+translations['weeklyRent'] = translations['dealInputs.weeklyRent'];
+translations['weeklyRentHint'] = translations['dealInputs.weeklyRentHint'];
+translations['commissionPct'] = translations['dealInputs.commissionPct'];
+translations['commissionPctHint'] = translations['dealInputs.commissionPctHint'];
+translations['weeksPerYear'] = translations['dealInputs.weeksPerYear'];
+translations['weeksPerYearHint'] = translations['dealInputs.weeksPerYearHint'];
+translations['workingDaysPerMonth'] = translations['realistic.workingDays'];
+translations['workingDaysHint'] = translations['realistic.workingDaysHint'];
+translations['apptsPerDay'] = translations['realistic.apptsPerDay'];
+translations['apptsPerDayHint'] = translations['realistic.apptsPerDayHint'];
+translations['avgTicket'] = translations['realistic.avgTicket'];
+translations['avgTicketHint'] = translations['realistic.avgTicketHint'];
+translations['noShowRate'] = translations['realistic.noShowRate'];
+translations['noShowHint'] = translations['realistic.noShowHint'];
+translations['directMonthlyRevenue'] = translations['realistic.directRevenue'];
+translations['spreadConservative'] = translations['realistic.spreadConservative'];
+translations['spreadConservativeDesc'] = translations['realistic.spreadConservativeDesc'];
+translations['spreadExpected'] = translations['realistic.spreadExpected'];
+translations['spreadExpectedDesc'] = translations['realistic.spreadExpectedDesc'];
+translations['spreadPeak'] = translations['realistic.spreadPeak'];
+translations['spreadPeakDesc'] = translations['realistic.spreadPeakDesc'];
+translations['artistPerspective'] = translations['comparison.artistTitle'];
+translations['artistSubtitle'] = translations['comparison.artistSubtitle'];
+translations['ownerPerspective'] = translations['comparison.ownerTitle'];
+translations['ownerSubtitle'] = translations['comparison.ownerSubtitle'];
+translations['boothModel'] = translations['comparison.boothModel'];
+translations['commModel'] = translations['comparison.commModel'];
+translations['inclusionSupplies'] = translations['inclusions.supplies'];
+translations['inclusionSuppliesHint'] = translations['inclusions.suppliesHint'];
+translations['inclusionLaundry'] = translations['inclusions.laundry'];
+translations['inclusionLaundryHint'] = translations['inclusions.laundryHint'];
+translations['inclusionCardFees'] = translations['inclusions.cardFees'];
+translations['inclusionCardFeesHint'] = translations['inclusions.cardFeesHint'];
+translations['inclusionUtilities'] = translations['inclusions.utilities'];
+translations['inclusionUtilitiesHint'] = translations['inclusions.utilitiesHint'];
+translations['payerArtist'] = translations['inclusions.payerArtist'];
+translations['payerOwner'] = translations['inclusions.payerOwner'];
+translations['payerSplit'] = translations['inclusions.payerSplit'];
+translations['breakEvenMonthly'] = translations['breakEven.monthlyLabel'];
+translations['breakEvenWeekly'] = translations['breakEven.weeklyLabel'];
+translations['breakEvenExplanation'] = translations['breakEven.explanation'];
+translations['breakEvenUndefined'] = translations['breakEven.undefined'];
+translations['errRevenuePositive'] = translations['warnings.errRevenuePositive'];
+translations['warnRentExceedsRev'] = translations['warnings.warnRentExceedsRev'];
+translations['warnComm100'] = translations['warnings.warnComm100'];
+translations['warnHighNoShow'] = translations['warnings.warnHighNoShow'];
+translations['warnHighRevenue'] = translations['warnings.warnHighRevenue'];
+translations['printTitle'] = translations['print.title'];
+translations['printSubtitle'] = translations['print.subtitle'];
+translations['printDisclaimer'] = translations['print.disclaimerText'];
+translations['printGeneratedOn'] = translations['print.generatedOn'];
+translations['printSignArtist'] = translations['print.signArtistTitle'];
+translations['printSignOwner'] = translations['print.signOwnerTitle'];
+translations['printNameLabel'] = translations['print.nameLabel'];
+translations['printSignLabel'] = translations['print.signatureLabel'];
+translations['printDateLabel'] = translations['print.dateLabel'];
+translations['printSignStatement'] = translations['print.signStatement'];
+translations['standardsTitle'] = translations['standards.title'];
+translations['standardsToggleHide'] = translations['standards.toggleHide'];
+translations['standardsToggleShow'] = translations['standards.toggleShow'];
+translations['standardsIntro'] = translations['standards.intro'];
+translations['matTitaniumTitle'] = translations['standards.matTitaniumTitle'];
+translations['matTitaniumDesc'] = translations['standards.matTitaniumDesc'];
+translations['matSteelTitle'] = translations['standards.matSteelTitle'];
+translations['matSteelDesc'] = translations['standards.matSteelDesc'];
+translations['matGaugesTitle'] = translations['standards.matGaugesTitle'];
+translations['matGaugesDesc'] = translations['standards.matGaugesDesc'];
+translations['relatedToolsTitle'] = translations['relatedTools.title'];
+translations['linkBenchmark'] = translations['relatedTools.linkBenchmark'];
+translations['linkBenchmarkDesc'] = translations['relatedTools.linkBenchmarkDesc'];
+translations['linkTax'] = translations['relatedTools.linkTax'];
+translations['linkTaxDesc'] = translations['relatedTools.linkTaxDesc'];
+translations['linkRoi'] = translations['relatedTools.linkRoi'];
+translations['linkRoiDesc'] = translations['relatedTools.linkRoiDesc'];
+translations['perMonth'] = translations['common.perMonth'];
+translations['perWeek'] = translations['common.perWeek'];
+translations['perYear'] = translations['common.perYear'];
+translations['monthAbbr'] = translations['common.monthAbbr'];
+translations['weekAbbr'] = translations['common.weekAbbr'];
+
+export type TranslationKey = keyof typeof translations;
+
+export const locales: Record<string, Record<string, string>> = {
+  en: translations,
+  fr: fr,
+  de: de,
+  it: it,
+  es: es,
+  nl: nl,
+  pt: pt,
+};
+
+export const supportedLanguages = ['en', 'fr', 'de', 'it', 'es', 'nl', 'pt'] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
-
-/**
- * Currency symbol injected wherever a dictionary value contains `{cur}`.
- * English prices in pound sterling because the tax overlay models HMRC first;
- * every other locale in this suite prices in euros.
- */
-const CURRENCY_SYMBOL: Record<SupportedLanguage, string> = {
-  en: '£',
-  fr: '€',
-  it: '€',
-  de: '€',
-  es: '€',
-  nl: '€',
-  pt: '€',
-};
-
-/** ISO 4217 code used for locale-aware number formatting. */
-const CURRENCY_CODE: Record<SupportedLanguage, string> = {
-  en: 'GBP',
-  fr: 'EUR',
-  it: 'EUR',
-  de: 'EUR',
-  es: 'EUR',
-  nl: 'EUR',
-  pt: 'EUR',
-};
-
-/** Endonym shown in the language selector, so it reads correctly in every locale. */
-export const languageNames: Record<SupportedLanguage, string> = {
-  en: 'English',
-  fr: 'Français',
-  it: 'Italiano',
-  de: 'Deutsch',
-  es: 'Español',
-  nl: 'Nederlands',
-  pt: 'Português',
-};
-
-/**
- * BCP 47 tag used for `Intl` date and number formatting.
- * English formats as en-GB because this suite models HMRC figures first;
- * every other locale formats with its own regional conventions, so a printed
- * summary reads "11 septembre 2026" in French rather than an English date.
- */
-const LOCALE_TAG: Record<SupportedLanguage, string> = {
-  en: 'en-GB',
-  fr: 'fr-FR',
-  it: 'it-IT',
-  de: 'de-DE',
-  es: 'es-ES',
-  nl: 'nl-NL',
-  pt: 'pt-PT',
-};
 
 let currentLanguage: SupportedLanguage = 'en';
 
 export function getLanguage(): SupportedLanguage {
   return currentLanguage;
-}
-
-export function getCurrencySymbol(lang?: SupportedLanguage): string {
-  return CURRENCY_SYMBOL[lang || currentLanguage] || CURRENCY_SYMBOL.en;
-}
-
-export function getCurrencyCode(lang?: SupportedLanguage): string {
-  return CURRENCY_CODE[lang || currentLanguage] || CURRENCY_CODE.en;
-}
-
-/** BCP 47 tag for the active locale, for `Intl.DateTimeFormat` and friends. */
-export function getLocaleTag(lang?: SupportedLanguage): string {
-  return LOCALE_TAG[lang || currentLanguage] || LOCALE_TAG.en;
 }
 
 export function setLanguage(lang: SupportedLanguage): void {
@@ -109,56 +545,27 @@ export function setLanguage(lang: SupportedLanguage): void {
   }
 }
 
-export type TranslationKey = keyof typeof en;
-
 /**
- * Single translate function for the whole suite.
- * Resolves a key from the active dictionary, substitutes `{cur}` plus any
- * caller-supplied parameters, and falls back to English (then to the key
- * itself) so a missing translation degrades instead of crashing.
+ * Single translate function for Booth Rent vs Commission Calculator.
+ * Resolves keys from the active dictionary with optional parameter substitution and English fallback.
  */
-export function t(
-  key: string,
-  params?: Record<string, string | number>,
-  langOverride?: SupportedLanguage
-): string {
+export function t(key: string, params?: Record<string, string | number>, langOverride?: SupportedLanguage): string {
   const activeLang = langOverride || currentLanguage;
   const dict = locales[activeLang] || translations;
-
   let str = dict[key];
+
+  // Fallback to English if key missing in current language
   if (str === undefined && activeLang !== 'en') {
     str = translations[key];
   }
   if (str === undefined) {
     str = key;
   }
-
-  const values: Record<string, string | number> = {
-    cur: CURRENCY_SYMBOL[activeLang] || CURRENCY_SYMBOL.en,
-    ...(params || {}),
-  };
-
-  Object.entries(values).forEach(([k, v]) => {
-    str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-  });
-
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+    });
+  }
   return str;
 }
 
-/**
- * Resolve a user-editable label that ships with a seed value.
- * A name the user has typed always wins; otherwise the seed's translation key
- * is rendered in the active language, so switching language still relabels
- * rows the user has not touched.
- */
-export function resolveName(
-  name?: string,
-  nameKey?: string,
-  params?: Record<string, string | number>
-): string {
-  // An explicitly set name always wins — including an empty one, so clearing a
-  // field does not snap the seeded label back.
-  if (name !== undefined) return name;
-  if (nameKey) return t(nameKey, params);
-  return '';
-}
