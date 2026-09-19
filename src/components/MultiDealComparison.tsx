@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, CheckCircle, Trophy, Sparkles, Building2, User } from 'lucide-react';
 import { CompetingOffer, DealParameters, InclusionItem } from '../types';
 import { computeCompetingOfferResult, formatCurrency } from '../utils/calculator';
-import { t, resolveName, getCurrencySymbol } from '../i18n/translations';
+import { t } from '../i18n/translations';
 
 interface MultiDealComparisonProps {
   baselineDeal: DealParameters;
@@ -18,28 +18,31 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
   const [offers, setOffers] = useState<CompetingOffer[]>([
     {
       id: 'offer-baseline',
-      nameKey: 'multiDeal.offerA',
+      name: 'Offer A: Baseline',
       type: baselineDeal.dealStructure === 'hybrid' ? 'hybrid' : 'booth',
       weeklyRent: baselineDeal.weeklyRent,
       commissionPct: baselineDeal.commissionPct,
       hybridBaseRent: baselineDeal.hybridBaseWeeklyRent || 120,
       hybridCommPct: baselineDeal.hybridCommissionPct || 20,
+      notes: 'Current baseline configuration',
     },
     {
       id: 'offer-high-comm',
-      nameKey: 'multiDeal.offerB',
+      name: 'Offer B: 60/40 Split Studio',
       type: 'comm',
       weeklyRent: 250,
       commissionPct: 40,
+      notes: 'Busy high-street walk-in studio',
     },
     {
       id: 'offer-hybrid',
-      nameKey: 'multiDeal.offerC',
+      name: 'Offer C: Low Rent + 15% Cut',
       type: 'hybrid',
       weeklyRent: 250,
       commissionPct: 40,
       hybridBaseRent: 100,
       hybridCommPct: 15,
+      notes: 'Hybrid security with upside',
     },
   ]);
 
@@ -47,8 +50,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
     if (offers.length >= 4) return;
     const newOffer: CompetingOffer = {
       id: 'offer-' + Date.now(),
-      nameKey: 'multiDeal.offerCustom',
-      nameParams: { letter: String.fromCharCode(65 + offers.length) },
+      name: `Offer ${String.fromCharCode(65 + offers.length)}: Custom Deal`,
       type: 'booth',
       weeklyRent: 275,
       commissionPct: 45,
@@ -123,9 +125,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
 
       {/* OFFERS INPUT GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {computedOffers.map((offer, idx) => {
-          const offerLabel = resolveName(offer.name, offer.nameKey, offer.nameParams);
-          return (
+        {computedOffers.map((offer, idx) => (
           <div
             key={offer.id}
             className={`border rounded-lg p-3.5 flex flex-col justify-between transition-all ${
@@ -139,7 +139,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                 <input
                   type="text"
                   aria-label={t('multiDeal.offerName')}
-                  value={offerLabel}
+                  value={offer.name}
                   onChange={(e) => updateOffer(offer.id, { name: e.target.value })}
                   className="font-bold text-xs sm:text-sm bg-transparent border-b border-dashed border-[var(--border)] text-[var(--text-main)] focus:outline-none focus:border-[var(--primary)] w-full mr-2 py-0.5"
                 />
@@ -147,7 +147,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                   <button
                     type="button"
                     onClick={() => removeOffer(offer.id)}
-                    aria-label={t('multiDeal.removeAria', { name: offerLabel })}
+                    aria-label={`Remove ${offer.name}`}
                     className="text-[var(--text-muted)] hover:text-red-500 p-1 cursor-pointer"
                   >
                     <Trash2 size={14} />
@@ -183,7 +183,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[var(--text-muted)]">{t('multiDeal.rentLabel')}</span>
                     <div className="flex items-center gap-1">
-                      <span>{getCurrencySymbol()}</span>
+                      <span>£</span>
                       <input
                         type="number"
                         min="0"
@@ -228,7 +228,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[var(--text-muted)]">{t('multiDeal.hybridBaseRent')}</span>
                     <div className="flex items-center gap-1">
-                      <span>{getCurrencySymbol()}</span>
+                      <span>£</span>
                       <input
                         type="number"
                         min="0"
@@ -280,8 +280,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
               )}
             </div>
           </div>
-          );
-        })}
+        ))}
       </div>
 
       {/* SIDE-BY-SIDE MATRIX TABLE */}
@@ -315,14 +314,10 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                   <td className="py-3 px-3">
                     <div className="font-bold text-[var(--text-main)] flex items-center gap-1.5">
                       {isBest && <CheckCircle size={14} className="text-emerald-500" />}
-                      <span>{resolveName(o.name, o.nameKey, o.nameParams)}</span>
+                      <span>{o.name}</span>
                     </div>
                     <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
-                      {o.type === 'booth'
-                        ? t('multiDeal.typeBooth')
-                        : o.type === 'comm'
-                        ? t('multiDeal.typeComm')
-                        : t('multiDeal.typeHybrid')}
+                      {o.type}
                     </span>
                   </td>
 
@@ -358,7 +353,7 @@ export const MultiDealComparison: React.FC<MultiDealComparisonProps> = ({
                         {formatCurrency(delta)}
                       </span>
                     ) : (
-                      <span className="text-[var(--text-muted)]">{formatCurrency(0)}</span>
+                      <span className="text-[var(--text-muted)]">£0.00</span>
                     )}
                   </td>
                 </tr>
