@@ -7,7 +7,7 @@ import {
   formatCurrency,
   formatWholeCurrency,
 } from '../utils/calculator';
-import { t, resolveName, getCurrencySymbol } from '../i18n/translations';
+import { t } from '../i18n/translations';
 
 export const StudioFloorPlanner: React.FC = () => {
   const [chairs, setChairs] = useState<StudioChair[]>(DEFAULT_STUDIO_CHAIRS);
@@ -21,8 +21,7 @@ export const StudioFloorPlanner: React.FC = () => {
     if (chairs.length >= 10) return;
     const newChair: StudioChair = {
       id: 'chair-' + Date.now(),
-      nameKey: 'studio.newStation',
-      nameParams: { number: chairs.length + 1 },
+      name: `Station ${chairs.length + 1} (New Station)`,
       model: 'booth',
       weeklyRent: 250,
       commissionPct: 45,
@@ -73,7 +72,7 @@ export const StudioFloorPlanner: React.FC = () => {
             {t('studio.monthlyOverhead')}
           </label>
           <div className="flex items-center gap-1">
-            <span className="text-sm font-bold">{getCurrencySymbol()}</span>
+            <span className="text-sm font-bold">£</span>
             <input
               type="number"
               min="0"
@@ -84,7 +83,7 @@ export const StudioFloorPlanner: React.FC = () => {
             />
           </div>
           <span className="text-[10px] text-[var(--text-muted)] block mt-1">
-            {t('studio.overheadShortHint')}
+            Lease, rates, insurance, staff
           </span>
         </div>
 
@@ -96,7 +95,7 @@ export const StudioFloorPlanner: React.FC = () => {
             {formatWholeCurrency(model.totalStudioRevenue)}
           </span>
           <span className="text-[10px] text-[var(--text-muted)] block mt-1">
-            {t('studio.revenueFromActive')}
+            From active chairs/splits
           </span>
         </div>
 
@@ -115,19 +114,19 @@ export const StudioFloorPlanner: React.FC = () => {
             {formatWholeCurrency(model.totalStudioNetProfit)}
           </span>
           <span className="text-[10px] text-[var(--text-muted)] block mt-1">
-            {t('studio.monthlyMargin')}
+            Monthly shop margin
           </span>
         </div>
 
         <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
           <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 block">
-            {t('studio.occupancyBreakEven')}
+            Occupancy Break-Even
           </span>
           <span className="text-base sm:text-lg font-black font-mono text-indigo-800 dark:text-indigo-200 mt-1 block">
-            {t('studio.chairsCount', { count: model.breakEvenChairsNeeded, total: chairs.length })}
+            {model.breakEvenChairsNeeded} of {chairs.length} Chairs
           </span>
           <span className="text-[10px] text-indigo-600 dark:text-indigo-400 block mt-1">
-            {t('studio.requiredForRent')}
+            Required to pay shop rent
           </span>
         </div>
       </div>
@@ -163,7 +162,7 @@ export const StudioFloorPlanner: React.FC = () => {
                 <input
                   type="text"
                   aria-label={t('studio.stationName')}
-                  value={resolveName(chair.name, chair.nameKey, chair.nameParams)}
+                  value={chair.name}
                   onChange={(e) => updateChair(chair.id, { name: e.target.value })}
                   className="font-bold text-xs sm:text-sm bg-transparent border-b border-dashed border-[var(--border)] text-[var(--text-main)] focus:outline-none focus:border-[var(--primary)] w-full max-w-xs py-0.5"
                 />
@@ -200,7 +199,7 @@ export const StudioFloorPlanner: React.FC = () => {
             <div className="flex items-center gap-4 text-xs">
               {chair.model === 'booth' && (
                 <div className="flex items-center gap-1">
-                  <span className="text-[var(--text-muted)]">{t('studio.rentLabel')} {getCurrencySymbol()}</span>
+                  <span className="text-[var(--text-muted)]">Rent: £</span>
                   <input
                     type="number"
                     min="0"
@@ -211,14 +210,14 @@ export const StudioFloorPlanner: React.FC = () => {
                     }
                     className="w-16 px-1.5 py-0.5 bg-[var(--bg-app)] border border-[var(--border)] rounded font-semibold text-right text-[var(--text-main)]"
                   />
-                  <span className="text-[var(--text-muted)]">{t('common.perWeek')}</span>
+                  <span className="text-[var(--text-muted)]">/wk</span>
                 </div>
               )}
 
               {chair.model === 'comm' && (
                 <>
                   <div className="flex items-center gap-1">
-                    <span className="text-[var(--text-muted)]">{t('studio.cutLabel')}</span>
+                    <span className="text-[var(--text-muted)]">Cut:</span>
                     <input
                       type="number"
                       min="0"
@@ -236,7 +235,7 @@ export const StudioFloorPlanner: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <span className="text-[var(--text-muted)]">{t('studio.revLabel')} {getCurrencySymbol()}</span>
+                    <span className="text-[var(--text-muted)]">Rev: £</span>
                     <input
                       type="number"
                       min="0"
@@ -254,16 +253,14 @@ export const StudioFloorPlanner: React.FC = () => {
               )}
 
               {chair.model === 'vacant' && (
-                <span className="text-rose-500 font-medium">{t('studio.zeroStation')}</span>
+                <span className="text-rose-500 font-medium">Station generating £0</span>
               )}
 
               {chairs.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeChair(chair.id)}
-                  aria-label={t('studio.removeAria', {
-                    name: resolveName(chair.name, chair.nameKey, chair.nameParams),
-                  })}
+                  aria-label={`Delete ${chair.name}`}
                   className="text-[var(--text-muted)] hover:text-red-500 p-1 cursor-pointer"
                 >
                   <Trash2 size={15} />
