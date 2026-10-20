@@ -138,7 +138,7 @@ export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showStandardsModal, setShowStandardsModal] = useState<boolean>(false);
 
-  // Language state (en, fr, it, de, es, nl, pt)
+  // Language state (en, fr, it, de, es, nl, pt, th)
   const [language, setLanguageState] = useState<SupportedLanguage>('en');
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
@@ -217,6 +217,7 @@ export default function App() {
                   <option value="es">Español (ES)</option>
                   <option value="nl">Nederlands (NL)</option>
                   <option value="pt">Português (PT)</option>
+                  <option value="th">ไทย (TH)</option>
                 </select>
               </div>
             </div>

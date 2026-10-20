@@ -345,7 +345,7 @@ export const en = {
   "hybrid.structureLabel": "Deal Contract Architecture",
   "hybrid.standard": "Standard Comparison (Flat Rent vs Flat Commission)",
   "hybrid.hybrid": "Hybrid Model (Base Weekly Rent + Reduced Commission Cut)",
-  "hybrid.floor": "Minimum Guarantee (Commission with Studio Floor Floor)",
+  "hybrid.floor": "Minimum Guarantee (Commission with Studio Floor)",
   "hybrid.baseRent": "Base Weekly Rent (£)",
   "hybrid.baseRentHint": "Guaranteed weekly floor rent paid to studio",
   "hybrid.commCut": "Reduced Commission Cut (%)",
