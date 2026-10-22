@@ -9,6 +9,7 @@ import { t } from '../i18n/translations';
 import { formatCurrency } from '../utils/calculator';
 import { User, Building2 } from 'lucide-react';
 
+import { Scale as IcScale } from 'lucide-react';
 interface BothSidesComparisonProps {
   booth: DealSideResult;
   comm: DealSideResult;
@@ -27,7 +28,7 @@ export const BothSidesComparison: React.FC<BothSidesComparisonProps> = ({
     <div className="my-4">
       <div className="mb-4">
         <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
-          <span>⚖️</span>
+          <IcScale size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} />
           <span>{t('comparison.secTitle')}</span>
         </h3>
         <p className="text-xs text-[var(--text-muted)] mt-0.5">

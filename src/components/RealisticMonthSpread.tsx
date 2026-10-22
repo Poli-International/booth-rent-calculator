@@ -9,6 +9,7 @@ import { RealisticMonthParams, MonthSpreadScenario } from '../types';
 import { t } from '../i18n/translations';
 import { formatCurrency } from '../utils/calculator';
 
+import { Calendar as IcCalendar } from 'lucide-react';
 interface RealisticMonthSpreadProps {
   params: RealisticMonthParams;
   scenarios: {
@@ -35,7 +36,7 @@ export const RealisticMonthSpread: React.FC<RealisticMonthSpreadProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
-            <span>📅</span>
+            <IcCalendar size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} />
             <span>{t('realistic.secTitle')}</span>
           </h3>
           <p className="text-xs text-[var(--text-muted)] mt-0.5">
