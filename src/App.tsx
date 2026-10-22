@@ -65,6 +65,7 @@ import { TaxOverlay } from './components/TaxOverlay';
 import { StudioFloorPlanner } from './components/StudioFloorPlanner';
 import { PresetAndShareBar } from './components/PresetAndShareBar';
 
+import { Check as IcCheck } from 'lucide-react';
 export default function App() {
   // Deal parameters
   const [deal, setDeal] = useState<DealParameters>(() => {
@@ -952,7 +953,7 @@ export default function App() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
                 <div className="font-bold text-[var(--c-booth)] text-xs mb-1">
-                  ✓ {t('standards.matTitaniumTitle')}
+                  <IcCheck size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} /> {t('standards.matTitaniumTitle')}
                 </div>
                 <div className="text-xs text-[var(--text-muted)] leading-normal">
                   {t('standards.matTitaniumDesc')}
@@ -961,7 +962,7 @@ export default function App() {
 
               <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
                 <div className="font-bold text-[var(--c-comm)] text-xs mb-1">
-                  ✓ {t('standards.matSteelTitle')}
+                  <IcCheck size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} /> {t('standards.matSteelTitle')}
                 </div>
                 <div className="text-xs text-[var(--text-muted)] leading-normal">
                   {t('standards.matSteelDesc')}
@@ -970,7 +971,7 @@ export default function App() {
 
               <div className="bg-[var(--bg-input)] p-2.5 rounded border border-[var(--border)]">
                 <div className="font-bold text-[var(--c-neutral)] text-xs mb-1">
-                  ✓ {t('standards.matGaugesTitle')}
+                  <IcCheck size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} /> {t('standards.matGaugesTitle')}
                 </div>
                 <div className="text-xs text-[var(--text-muted)] leading-normal">
                   {t('standards.matGaugesDesc')}

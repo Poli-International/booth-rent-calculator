@@ -9,6 +9,7 @@ import { DealParameters, InclusionItem } from '../types';
 import { t } from '../i18n/translations';
 import { formatWholeCurrency } from '../utils/calculator';
 
+import { TrendingUp as IcTrendingUp } from 'lucide-react';
 interface BreakEvenChartProps {
   deal: DealParameters;
   inclusions: InclusionItem[];
@@ -123,7 +124,7 @@ export const BreakEvenChart: React.FC<BreakEvenChartProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
         <div>
           <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2">
-            <span>📈</span>
+            <IcTrendingUp size={16} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0 }} />
             <span>{t('breakEven.secTitle')}</span>
           </h3>
           <p className="text-xs text-[var(--text-muted)]">
