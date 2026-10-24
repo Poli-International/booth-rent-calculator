@@ -943,6 +943,34 @@ export function computeCompetingOfferResult(
   };
 }
 
+/**
+ * Equipment payback (absorbed from the Equipment ROI Calculator).
+ * sharePct is the part of each session price the buyer keeps under the deal:
+ * 100 on booth rent, 100 - commission for the artist on commission, the
+ * commission for the studio. The buyer pays the consumables and upkeep.
+ */
+export interface EquipmentInputs {
+  cost: number;
+  sessionsPerDay: number;
+  daysPerWeek: number;
+  pricePerSession: number;
+  consumablesPerSession: number;
+  upkeepPerYear: number;
+  lifespanYears: number;
+}
+
+export function equipmentPayback(e: EquipmentInputs, sharePct: number, weeksPerYear = 52) {
+  const monthlySessions = (e.sessionsPerDay * e.daysPerWeek * weeksPerYear) / 12;
+  const monthlyNet =
+    monthlySessions * ((e.pricePerSession * sharePct) / 100 - e.consumablesPerSession) - e.upkeepPerYear / 12;
+  const paybackMonths = monthlyNet > 0 ? e.cost / monthlyNet : null;
+  return {
+    monthlyNet,
+    paybackMonths,
+    sessionsToPayback: paybackMonths === null ? null : Math.ceil(paybackMonths * monthlySessions),
+    lifetimeNet: monthlyNet * 12 * e.lifespanYears - e.cost,
+  };
+}
 
 export function formatCurrency(n: number): string {
   if (isNaN(n)) return '£0.00';
