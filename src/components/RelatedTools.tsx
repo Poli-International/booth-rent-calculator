@@ -3,12 +3,11 @@
  * Provides clean links to external suite calculators as mandated:
  * - studio-pricing-benchmark
  * - tax-deduction-tracker
- * - equipment-roi-calculator
  */
 
 import React from 'react';
 import { t } from '../i18n/translations';
-import { ExternalLink, DollarSign, Calculator, Wrench } from 'lucide-react';
+import { ExternalLink, DollarSign, Calculator } from 'lucide-react';
 
 export const RelatedTools: React.FC = () => {
   return (
@@ -18,7 +17,7 @@ export const RelatedTools: React.FC = () => {
         <span>{t('relatedTools.title')}</span>
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Studio Pricing Benchmark */}
         <a
           href="https://poliinternational.com/tools/studio-pricing-benchmark/"
@@ -61,26 +60,6 @@ export const RelatedTools: React.FC = () => {
           </span>
         </a>
 
-        {/* Equipment ROI Calculator */}
-        <a
-          href="https://poliinternational.com/tools/equipment-roi-calculator/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-3.5 rounded-lg bg-[var(--bg-input)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col justify-between group no-underline min-h-[60px]"
-        >
-          <div>
-            <div className="flex items-center gap-1.5 font-bold text-xs text-[var(--text-main)] group-hover:text-[var(--primary)] mb-1">
-              <Wrench size={15} className="text-[var(--c-neutral)]" />
-              <span>{t('relatedTools.linkRoi')}</span>
-            </div>
-            <p className="text-xs text-[var(--text-muted)] leading-normal">
-              {t('relatedTools.linkRoiDesc')}
-            </p>
-          </div>
-          <span className="text-xs text-[var(--primary)] font-semibold mt-2.5 flex items-center gap-1">
-            {t('relatedTools.openToolLink')}
-          </span>
-        </a>
       </div>
     </div>
   );

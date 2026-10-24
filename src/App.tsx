@@ -36,6 +36,7 @@ import {
   ChevronDown,
   ChevronUp,
   Globe,
+  Wrench,
 } from 'lucide-react';
 
 import {
@@ -64,6 +65,7 @@ import { SeasonalityCashFlow } from './components/SeasonalityCashFlow';
 import { TaxOverlay } from './components/TaxOverlay';
 import { StudioFloorPlanner } from './components/StudioFloorPlanner';
 import { PresetAndShareBar } from './components/PresetAndShareBar';
+import { EquipmentPayback } from './components/EquipmentPayback';
 
 import { Check as IcCheck } from 'lucide-react';
 export default function App() {
@@ -129,8 +131,13 @@ export default function App() {
 
   // Active view tab
   const [activeTab, setActiveTab] = useState<
-    'both' | 'multi' | 'spread' | 'seasonality' | 'tax' | 'studio' | 'inclusions' | 'breakeven' | 'print'
-  >('both');
+    'both' | 'multi' | 'spread' | 'seasonality' | 'tax' | 'studio' | 'inclusions' | 'breakeven' | 'payback' | 'print'
+  >(() => {
+    // ?tab=payback: the retired Equipment ROI Calculator redirects here. window.parent is
+    // the site page when framed (the query stays there), the tool itself when not.
+    try { return new URLSearchParams(window.parent.location.search).get('tab') === 'payback' ? 'payback' : 'both'; }
+    catch { return 'both'; }
+  });
 
   // Advanced deal controls drawer
   const [showAdvancedSplit, setShowAdvancedSplit] = useState<boolean>(false);
@@ -783,6 +790,19 @@ export default function App() {
 
         <button
           type="button"
+          onClick={() => setActiveTab('payback')}
+          className={`px-3 py-2 text-xs rounded-t-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap min-h-[44px] ${
+            activeTab === 'payback'
+              ? 'bg-[var(--bg-card)] text-[var(--primary)] border-t border-x border-[var(--border)] -mb-[1px]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-main)] bg-transparent'
+          }`}
+        >
+          <Wrench size={14} />
+          <span>{t('nav.payback')}</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('print')}
           className={`px-3 py-2 text-xs rounded-t-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ml-auto min-h-[44px] ${
             activeTab === 'print'
@@ -862,6 +882,8 @@ export default function App() {
             currentMonthlyRevenue={model.grossMonthlyRevenue}
           />
         )}
+
+        {activeTab === 'payback' && <EquipmentPayback deal={deal} />}
       </div>
 
       {/* PRINTABLE SUMMARY */}
